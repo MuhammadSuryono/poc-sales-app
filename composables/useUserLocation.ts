@@ -26,7 +26,7 @@ export const useUserLocation = () => {
 
   const reverseGeocode = async (latitude: number, longitude: number) => {
     const response = await fetch(
-      `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=5d9e352cca42475bb61e86aa5c6258fd&language=en&pretty=1`
+      `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=c808fbb3f98f4c2594aeebf8fc8f68f8&language=en&pretty=1`
     )
     const data = await response.json()
     if (data.total_results > 0) {
@@ -45,7 +45,7 @@ export const useUserLocation = () => {
       { latitude: coords.value.lat, longitude: coords.value.lng },
       { latitude: target.lat, longitude: target.lng }
     )
-    return distance >= 1000 ? `${(distance/1000).toFixed(2)} Km` : `${distance} Meter`
+    return distance >= 1000 ? `${(distance / 1000).toFixed(2)} Km` : `${distance} Meter`
   }
 
   /**

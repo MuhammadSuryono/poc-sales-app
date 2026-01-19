@@ -57,7 +57,7 @@ const openMap = (lat: number, lng: number) => {
 const searchAddress = async () => {
   listResponse.value = []
   const response = await fetch(
-      `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(form.value.address)}&key=5d9e352cca42475bb61e86aa5c6258fd&language=id&pretty=1`
+      `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(form.value.address)}&key=c808fbb3f98f4c2594aeebf8fc8f68f8&language=id&pretty=1`
     )
     const data = await response.json()
     if (data.total_results > 0) {
