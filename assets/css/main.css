@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+body {
+    background: #ffffff;
+}
+
+:root {
+    font-family: Poppins, 'sans-serif';
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+}
+
+@theme {
+    --font-family: 'Poppins', 'sans-serif';
+
+    --color-primary: oklch(66.84% 0.222 284.65);
+    --color-primary-hover: oklch(61% 0.222 284.65);
+    --color-primary-active: oklch(55% 0.222 284.65);
+    --color-primary-muted: oklch(78% 0.12 284.65);
+    --color-primary-foreground: oklch(99% 0 0); /* white */
+
+    --color-success: oklch(76.58% 0.233 143.96);
+    --color-success-hover: oklch(70% 0.233 143.96);
+    --color-success-active: oklch(64% 0.233 143.96);
+    --color-success-muted: oklch(85% 0.12 143.96);
+    --color-success-foreground: oklch(99% 0 0); /* white */
+
+    --color-danger: oklch(65.99% 0.241 27.25);
+    --color-danger-hover: oklch(60% 0.241 27.25);
+    --color-danger-active: oklch(52% 0.241 27.25);
+    --color-danger-muted: oklch(75% 0.12 27.25);
+    --color-danger-foreground: oklch(99% 0 0); /* white */
+
+    /* Label Colors */
+    --color-label-primary: oklch(99.57% 0 0);            /* #FFFFFF */
+    --color-label-secondary: oklch(89.89% 0 0);          /* #FFFFFF 60% */
+    --color-label-tertiary: oklch(77.48% 0 0);           /* #FFFFFF 30% */
+    --color-label-quaternary: oklch(73.42% 0 0);         /* #FFFFFF 20% */
+
+    /* Primary Color Set */
+    --color-color-1: oklch(83.31% 0.194 195.92);         /* #22D7FF */
+    --color-color-2: oklch(41.29% 0.165 291.12);         /* #48319D */
+    --color-color-3: oklch(41.93% 0.248 313.48);         /* #8015A7 */
+    --color-color-4: oklch(21.98% 0.037 278.59);         /* #1D1C34 */
+
+    /* Accent Colors */
+    --color-color-5: oklch(61.08% 0.27 311.71);          /* #A73EE7 */
+    --color-color-6: oklch(87.61% 0.207 192.62);         /* #00EBFF */
+    --color-color-7: oklch(43.97% 0.069 276.32);         /* #2E335A */
+    --color-color-8: oklch(35.29% 0.134 303.49);         /* #613690 */
+    --color-color-9: oklch(41.61% 0.28 295.73);          /* #8322FF */
+    --color-color-10: oklch(0.915 0.03 307.108);          /* #8322FF */
+
+    /* Status Colors */
+    --color-status-error: oklch(67.15% 0.202 28.37);     /* #ED695E */
+    --color-status-warning: oklch(80.06% 0.153 82.64);   /* #F4BF4F */
+    --color-status-success: oklch(72.43% 0.151 144.06);  /* #61C554 */
+
+    /* Wireframe Colors */
+    --color-wireframe-primary: oklch(43.97% 0.069 276.32);  /* #2E335A */
+    --color-wireframe-secondary: oklch(46.52% 0.051 276.71);/* #454B79 */
+    --color-wireframe-tertiary: oklch(16.27% 0.045 276.37); /* #0C1033 */
+    --color-wireframe-quaternary: oklch(24.69% 0.042 275.5);/* #1D234D */
+
+    --color-logo-primary: linear-gradient(
+            to top right,
+            oklch(61.08% 0.27 311.71),
+            oklch(87.61% 0.207 192.62)
+    );
+
+    --shadow-custom-wireframe: '0 4px 10px -2px var(--wireframe-quaternary)'
+}
+
+.border {
+    border-color: var(--color-label-secondary);
+}
+
+.border-b {
+    border-color: var(--color-label-secondary);
+}
+
+.border-t {
+    border-color: var(--color-label-secondary);
+}
+
+.border-r {
+    border-color: var(--color-label-secondary);
+}
+
+.border-l {
+    border-color: var(--color-label-secondary);
+}
+
+/* assets/css/main.css */
+body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* assets/css/main.css */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+/* Di assets/css/main.css */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 9999px;
+}
+
+.box-shadow-full {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.box-shadow-botton {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}

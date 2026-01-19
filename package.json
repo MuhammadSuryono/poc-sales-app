@@ -1,0 +1,35 @@
+{
+  "name": "poc-sales-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "build:mobile": "nuxi generate && npx cap sync"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.1",
+    "@capacitor/camera": "^7.0.1",
+    "@capacitor/cli": "^7.4.1",
+    "@capacitor/core": "^7.4.1",
+    "@capacitor/geolocation": "^7.1.3",
+    "@heroicons/vue": "^2.2.0",
+    "@nuxt/image": "^1.10.0",
+    "@nuxtjs/google-fonts": "^3.2.0",
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "@tailwindcss/vite": "^4.1.8",
+    "@vueuse/core": "^13.5.0",
+    "geolib": "^3.3.4",
+    "imagekit": "^6.0.0",
+    "leaflet": "^1.9.4",
+    "nuxt": "^3.17.6",
+    "pinia": "^3.0.3",
+    "tailwindcss": "^4.1.8",
+    "typescript": "^5.8.3",
+    "vue": "^3.5.15",
+    "vue-router": "^4.5.1"
+  }
+}
