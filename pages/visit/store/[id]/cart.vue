@@ -13,7 +13,7 @@
       >
         <!-- Gambar Produk -->
         <NuxtImg
-          :src="p.Image"
+          :src="p.image"
           class="w-20 h-20 object-cover rounded-md border"
           alt="Product"
         />
@@ -22,8 +22,8 @@
         <div class="flex flex-col justify-between w-full h-full">
           <!-- Info Produk -->
           <div>
-            <p class="text-xs text-gray-400">{{ p.Code }}</p>
-            <p class="text-base font-semibold text-gray-800">{{ p.Name }}</p>
+            <p class="text-xs text-gray-400">{{ p.code }}</p>
+            <p class="text-base font-semibold text-gray-800">{{ p.name }}</p>
           </div>
 
           <!-- Harga & Aksi -->
@@ -32,15 +32,15 @@
             <div class="flex items-center gap-2">
               <div class="flex flex-col">
                 <span
-                  v-if="p.Discount > 0"
+                  v-if="p.discount > 0"
                   class="text-xs text-gray-400 line-through"
                 >
-                  {{ useString.setNumberFormat(p.Price) }}
+                  {{ useString.setNumberFormat(p.price) }}
                 </span>
                 <span class="text-sm font-semibold text-primary leading-tight">
                   {{
                     useString.setNumberFormat(
-                      p.Price * (1 - p.Discount / 100)
+                      p.price * (1 - p.discount / 100)
                     )
                   }}
                 </span>
@@ -48,16 +48,16 @@
 
               <!-- Diskon Badge -->
               <span
-                v-if="p.Discount > 0"
+                v-if="p.discount > 0"
                 class="text-xs bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded"
               >
-                -{{ p.Discount }}%
+                -{{ p.discount }}%
               </span>
 
               <!-- Input Qty -->
               <input
                 type="number"
-                :value="p.Quantity"
+                :value="p.quantity"
                 class="w-16 text-center border rounded-md text-sm py-1 px-2 focus:outline-none focus:ring focus:border-primary"
                 @input="onQuantityChange($event, p)"
                 min="1"
@@ -170,15 +170,15 @@ const showModalCofirmation = ref<boolean>(false)
 
 const onQuantityChange = (e: Event, product: CartProduct) => {
   const val = Number((e.target as HTMLInputElement).value)
-  product.Quantity = val > 0 ? val : 1
-  product.Total = product.Price * product.Quantity
+  product.quantity = val > 0 ? val : 1
+  product.total = product.price * product.quantity
 }
 
 const onRemoveProduct = (product: CartProduct) => {
   useOrder.$patch(state => {
     const cart = state.charts.find(c => c.CustomerNo === route?.params?.id && c.Status === 'ACTIVE')
     if (cart) {
-      cart.Products = cart.Products.filter(p => p.Code !== product.Code)
+      cart.Products = cart.Products.filter(p => p.code !== product.code)
     }
   })
 }
@@ -186,7 +186,7 @@ const onCreateOrder = async () => {
   useLoading.setLoading('Mohon tunggu...')
   const user = useUser?.user as User
   useOrder.createOrder(customerId, selectedPayment.value, note.value)
-  useUser.updateStatistic(user?.userId, totalPriceInCart.value)
+  useUser.updateStatistic(user?.user_id, totalPriceInCart.value)
   useOrder.$patch(state => {
     const cart = state.charts.find(c => c.CustomerNo === route?.params?.id && c.Status === 'ACTIVE')
     if (cart) {

@@ -1,68 +1,85 @@
 <template>
-  <div class="flex flex-col bg-gray-100">
+  <div class="min-h-screen bg-gray-50 flex flex-col">
     <CardNavbarBack title="Input Kunjungan">
       <template #right>
-        <NavbarCart />
+        <NavbarCart class="text-white" />
       </template>
     </CardNavbarBack>
-    <client-only>
-      <Maps :lat="userLocation?.coords.value.lat" :lng="userLocation?.coords.value.lng" />
-    </client-only>
-    <div class="text-sm flex flex-row gap-2 items-start px-2 py-4">
-      <div class="w-[5%] text-center text-danger">
-        <MapPinIcon class="h-5 w-5" />
-      </div>
-      <div class="flex flex-col gap-1">
-        <span>{{ detailTiket?.visitAddress }}</span>
-        <div class="flex flex-row items-center">
-          <span class="text-danger text-xs">Anda berada {{ distance }} dari lokasi</span>
-          <span class="flex flex-row gap-1 py-1 px-3 w-fit cursor-pointer items-center text-xs" @click="reGetLocation" v-if="!insideRadius">
-            <ArrowPathIcon class="h-4 w-4" />
-          </span>
-        </div>
-      </div>
+    <div class="bg-white border-b border-gray-100">
+      <client-only>
+        <Maps :lat="userLocation?.coords.value.lat" :lng="userLocation?.coords.value.lng" />
+      </client-only>
     </div>
-    <div class="flex flex-col gap-2 p-3 mt-3 border-t rounded-2xl bg-white">
-      <div class="flex flex-col gap-5 justify-between items-start max-lg:px-0 px-5 text-sm">
-        <div class="flex flex-row justify-between w-full gap-2">
-          <span class="font-semibold flex flex-col">Mulai Kunjungan <span class="font-normal text-gray-500">{{ detailTiket?.visitCheckIn ? useString.setDateTimeFormat(new Date(detailTiket?.visitCheckIn)) : '-' }}</span></span>
-          <span class="font-semibold flex flex-col">Selesai Kunjungan <span class="font-normal text-gray-500">{{ detailTiket?.visitCheckOut ? useString.setDateTimeFormat(new Date(detailTiket?.visitCheckOut)) : '-' }}</span></span>
+    <div class="px-4 py-4">
+      <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-start gap-3">
+          <div class="p-2 bg-java-green/10 rounded-lg">
+            <MapPinIcon class="h-5 w-5 text-java-green" />
+          </div>
+          <div class="flex-1">
+            <div class="text-xs font-bold text-gray-700">{{ detailTiket?.visit_address }}</div>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-[11px] text-gray-500">Jarak dari lokasi: {{ distance }}km</span>
+              <button 
+                v-if="!insideRadius"
+                class="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
+                @click="reGetLocation"
+              >
+                <ArrowPathIcon class="h-4 w-4 text-gray-600" />
+                <span class="text-gray-600">Perbarui lokasi</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="flex flex-col">
+            <span class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">Waktu Check-In</span>
+            <span class="text-xs font-black text-gray-700 block tracking-tight">{{ detailTiket?.visit_check_in ? useString.setDateTimeFormat(new Date(detailTiket?.visit_check_in)) : '-' }}</span>
+          </div>
+          <div class="flex flex-col items-end">
+            <span class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">Waktu Check-Out</span>
+            <span class="text-xs font-black text-gray-700 block tracking-tight">{{ detailTiket?.visit_check_out ? useString.setDateTimeFormat(new Date(detailTiket?.visit_check_out)) : '-' }}</span>
+          </div>
         </div>
       </div>
 
-      <div class="flex flex-col gap-1 w-full mt-5 text-sm">
-        <span>Aktivitas</span>
-        <textarea class="w-full border rounded-sm max-lg:h-30 h-45 px-3 py-3 text-gray-700 text-sm" v-model="visitNote"></textarea>
+      <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm mt-4 mb-16">
+        <div class="flex flex-col gap-2">
+          <span class="text-sm font-bold text-gray-700">Catatan Aktivitas</span>
+          <textarea 
+            class="w-full border border-gray-200 rounded-xl min-h-[120px] p-4 text-sm text-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+            placeholder="Masukkan catatan kunjungan..."
+            v-model="visitNote"
+          ></textarea>
+        </div>
 
         <div class="flex flex-col gap-2 mt-3" v-if="user?.role === 'COLLECTOR'">
-          <span class="font-semibold">Balance: {{ useUseString()?.setNumberFormat(detailTiket?.balance) }}</span>
-          <FormInput label="Nilai Pembayaran" placeholder="500000" type="text" v-model="visitPayment" />
+          <span class="text-sm font-bold text-gray-700">Balance: {{ useUseString()?.setNumberFormat(detailTiket?.balance) }}</span>
+          <FormInput label="Nilai Pembayaran" placeholder="cth: 500000" type="text" v-model="visitPayment" />
         </div>
 
-        <div class="mt-3 flex flex-col gap-1 mt-8" v-if="user?.role === 'SALES'">
-          <span>Foto Produk ({{ detailTiket?.visitImage?.product?.length ?? 0 }})</span>
+        <div class="mt-5 flex flex-col gap-3" v-if="user?.role === 'SALES'">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-gray-700">Foto Produk</span>
+            <span class="text-xs text-gray-400">{{ visitImage?.filter((item) => item.category === 'product').length ?? 0 }} Foto</span>
+          </div>
 
           <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
-            <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
             <div class="flex flex-row gap-1 overflow-x-auto scrollbar-hide max-w-[90%]">
               <div
-                v-for="(im, i) in detailTiket?.visitImage?.product"
+                v-for="(im, i) in visitImage?.filter((item) => item.category === 'product')"
                 :key="i"
-                class="min-w-[120px] h-[120px] relative group"
+                class="min-w-[100px] aspect-square relative group"
               >
-                <!-- Gambar -->
                 <NuxtImg
-                  class="max-w-[120px] h-[120px] object-cover rounded-xs hover:cursor-zoom-in"
-                  :src="im"
-                  @click="setPreview(im)"
+                  class="h-full w-full object-cover rounded-xl shadow-sm border border-gray-100 hover:cursor-zoom-in"
+                  :src="im.url"
+                  @click="setPreview(im.url)"
                 />
 
-                <!-- Tombol hapus di pojok kanan atas -->
                 <button
-                  @click.stop="removePhoto('location', i)"
-                  class="absolute top-1 right-1 bg-black bg-opacity-60 text-white text-[10px] px-1 rounded-sm hover:bg-red-600 transition"
+                  @click.stop="removePhoto('location', im.id)"
+                  class="absolute top-1 right-1 bg-black/60 text-white text-[10px] px-1 rounded-md hover:bg-red-600 transition"
                   title="Hapus gambar"
                 >
                   ✕
@@ -70,36 +87,34 @@
               </div>
             </div>
 
-            <!-- Add Button -->
-            <div class="min-w-[120px] h-[120px] rounded-xs bg-gray-200 flex items-center justify-center text-gray-500 text-sm cursor-pointer hover:bg-gray-100" 
+            <div class="min-w-[100px] aspect-square rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 text-sm cursor-pointer hover:bg-gray-200 border border-gray-200" 
               @click="takePhoto('product')">
               <CameraIcon class="h-4 w-4" />
             </div>
           </div>
-          </div>
         </div>
-        <div class="mt-3 flex flex-col gap-1">
-          <span>Foto Toko / Lokasi / Pelanggan ({{ detailTiket?.visitImage?.location?.length ?? 0 }})</span>
+        <div class="mt-5 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-gray-700">Foto Toko / Lokasi / Pelanggan</span>
+            <span class="text-xs text-gray-400">{{ visitImage?.filter((item) => item.category === 'location').length ?? 0 }} Foto</span>
+          </div>
 
           <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
             <div class="flex flex-row gap-1 overflow-x-auto scrollbar-hide max-w-[90%]">
               <div
-                v-for="(im, i) in detailTiket?.visitImage?.location"
+                v-for="(im, i) in visitImage?.filter((item) => item.category === 'location')"
                 :key="i"
-                class="min-w-[120px] h-[120px] relative group"
+                class="min-w-[100px] aspect-square relative group"
               >
-                <!-- Gambar -->
                 <NuxtImg
-                  class="h-full w-full object-cover rounded-xs hover:cursor-zoom-in"
-                  :src="im"
-                  @click="setPreview(im)"
+                  class="h-full w-full object-cover rounded-xl shadow-sm border border-gray-100 hover:cursor-zoom-in"
+                  :src="im.url"
+                  @click="setPreview(im.url)"
                 />
 
-                <!-- Tombol hapus di pojok kanan atas -->
                 <button
-                  @click.stop="removePhoto('location', i)"
-                  class="absolute top-1 right-1 bg-black bg-opacity-60 text-white text-[10px] px-1 rounded-sm hover:bg-red-600 transition"
+                  @click.stop="removePhoto('location', im.id)"
+                  class="absolute top-1 right-1 bg-black/60 text-white text-[10px] px-1 rounded-md hover:bg-red-600 transition"
                   title="Hapus gambar"
                 >
                   ✕
@@ -107,31 +122,36 @@
               </div>
             </div>
 
-            <!-- Add Button -->
-            <div class="min-w-[120px] h-[120px] rounded-xs bg-gray-200 flex items-center justify-center text-gray-500 text-sm cursor-pointer hover:bg-gray-100" 
+            <div class="min-w-[100px] aspect-square rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 text-sm cursor-pointer hover:bg-gray-200 border border-gray-200" 
               @click="takePhoto('location')">
               <CameraIcon class="h-4 w-4" />
             </div>
           </div>
         </div>
       </div>
-      
-      <div
-        v-if="preview"
-        class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
-        @click="preview = false"
-      >
-        <div class="bg-white rounded shadow-xl z-99 p-2 max-w-[90%] max-h-[90%]">
-          <NuxtImg
-            :src="previewSrc"
-            class="min-w-90 max-w-full min-h-90 max-h-[80vh] object-contain"
-          />
+      <Transition name="fade">
+        <div
+          v-if="preview"
+          class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
+          @click="preview = false"
+        >
+          <button class="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors">
+            <XMarkIcon class="h-8 w-8" />
+          </button>
+          <div class="max-w-full max-h-full">
+            <NuxtImg
+              :src="previewSrc"
+              class="max-w-[90vw] max-h-[85vh] object-contain rounded-xl shadow-2xl"
+            />
+          </div>
         </div>
-      </div>
+      </Transition>
       
-      <div class="flex flex-row gap-2 items-center justify-end mt-5 py-3">
-        <ButtonSecondary text="Batal" class="w-fit text-sm font-normal box-shadow-full" @click="router.go(-1)"/>
-        <ButtonPrimary text="Simpan" class="w-fit font-normal  box-shadow-full" @click="saveVisitData" />
+      <div class="fixed inset-x-0 bottom-0 z-40 pb-2 px-4 safe-area-bottom">
+        <div class="bg-white border-t border-gray-100 rounded-t-2xl shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.08)] p-3 flex items-center justify-end gap-3">
+          <ButtonSecondary text="Batal" class="font-normal" @click="router.go(-1)"/>
+          <ButtonPrimary text="Simpan" class="font-normal" @click="saveVisitData" />
+        </div>
       </div>
     </div>
   </div>
@@ -139,8 +159,8 @@
 
 <script lang="ts" setup>
 import { useUserStore } from '~/stores/user';
-import type { Tiket, User } from '~/types/user';
-import { MapPinIcon, CameraIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { type VisitImage, type Tiket, type User } from '~/types/user';
+import { MapPinIcon, CameraIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
 import ImageKit from 'imagekit';
 import { useLoadingState } from '~/stores/loading';
@@ -150,13 +170,15 @@ const useStore = useUserStore()
 const user = computed(() => useStore?.user as User)
 const useNotification = useNotificationStore();
 const allTiket = computed((): Tiket[] => useStore.getAllTiketUser()?.sort((a, b) => {
-  return new Date(b?.lastUpdated).getTime() - new Date(a?.lastUpdated).getTime()
+  return new Date(b?.last_updated).getTime() - new Date(a?.last_updated).getTime()
 }))
+const visitImage = ref<VisitImage[]>([])
+const visitImageRemove = ref<string[]>([])
 
 const route = useRoute();
 const router = useRouter();
 const detailTiket = computed(() => {
-  return allTiket.value.find((tiket) => tiket?.customerNo === route?.params?.id) as Tiket
+  return allTiket.value.find((tiket) => tiket?.customer_no === route?.params?.id) as Tiket
 })
 const userLocation = useUserLocation()
 const distance = computed(() => userLocation.calculateDistance({
@@ -171,8 +193,8 @@ const insideRadius = computed((): boolean => detailTiket.value ? userLocation.is
 const useString = useUseString()
 const preview = ref<boolean>(false)
 const previewSrc = ref<string>("")
-const visitNote = ref<string | undefined>(detailTiket.value?.visitNote ?? '-')
-const visitPayment = ref<string>(detailTiket.value?.visitPayment ?? '0')
+const visitNote = ref<string | undefined>(detailTiket.value?.visit_note ?? '-')
+const visitPayment = ref<string>(detailTiket.value?.visit_payment ?? '0')
 const useLoading = useLoadingState()
 
 const setPreview = (src: string) => {
@@ -182,13 +204,13 @@ const setPreview = (src: string) => {
 
 const saveVisitData = async () => {
   useLoading.setLoading('Data sedang disimpan...')
-  detailTiket.value.visitNote = visitNote.value
-  detailTiket.value.visitPayment = visitPayment.value
-  
-  setTimeout(() => {
-    useLoading.disLoading()
-    useNotification.toggle('Berhasil disimpan')
-  }, 3000)
+  detailTiket.value.visit_note = visitNote.value
+  detailTiket.value.visit_payment = visitPayment.value
+
+  await useStore.updateTicketData(detailTiket.value)
+  await useStore.saveBatchVisitImage(visitImage.value, visitImageRemove.value)
+  useLoading.disLoading()
+  useNotification.toggle('Berhasil disimpan')
 }
 
 const takePhoto = async (loc: string) => {
@@ -199,12 +221,6 @@ const takePhoto = async (loc: string) => {
   })
 
   const base64 = photo.base64String
-  if(!detailTiket.value.visitImage) {
-    detailTiket.value.visitImage = {
-      location: [],
-      product: [],
-    }
-  }
 
   let url = ''
   if(base64) {
@@ -213,25 +229,25 @@ const takePhoto = async (loc: string) => {
     useLoading.disLoading()
   }
 
-  if (loc === 'location' && url ) {
-    detailTiket.value.visitImage.location?.push(url)
-    useNotification.toggle('Berhasil diunggah dan disimpan')
-  } else if (loc === 'product' && url ) {
-    detailTiket.value.visitImage.product?.push(url)
-    useNotification.toggle('Berhasil diunggah dan disimpan')
-  } else {
-    throw new Error('Ivalid location type')
+  if (!detailTiket.value?.id) {
+    throw new Error('Tiket ID is undefined')
   }
+
+  if (!url) {
+    throw new Error('Failed to upload image')
+  }
+
+  visitImage.value.push({
+    id: useString.uuidv4(),
+    visit_id: detailTiket.value?.id as string,
+    category: loc,
+    url,
+  })
 }
 
-const removePhoto = (loc: string, index: number) => {
-  if (loc === 'location' && detailTiket.value.visitImage?.location) {
-    detailTiket.value.visitImage.location.splice(index, 1)
-  } else if (loc === 'product' && detailTiket.value.visitImage?.product) {
-    detailTiket.value.visitImage.product.splice(index, 1)
-  } else {
-    console.error('Invalid location type')
-  }
+const removePhoto = (loc: string, id: string) => {
+  visitImage.value = visitImage.value.filter((im) => im.id !== id)
+  visitImageRemove.value.push(id)
 }
 
 const uploadFileImage = async (base64: string) => {
@@ -259,9 +275,16 @@ const uploadFileImage = async (base64: string) => {
 const reGetLocation = async () => {
   useLoading.setLoading('Sedang mengambil lokasi...')
   await userLocation.getLocation()
-  detailTiket.value.visitAddress = userLocation.address
+  detailTiket.value.visit_address = userLocation.address
   useLoading.disLoading()
 }
+
+onMounted(async () => {
+  if (allTiket.value.length === 0) {
+    await useStore.fetchAllTiketUser()
+  }
+  visitImage.value = await useStore.fetchVisitImage(detailTiket.value?.id as string)
+})
 </script>
 
 <style>

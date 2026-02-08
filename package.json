@@ -8,7 +8,12 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "build:mobile": "nuxi generate && npx cap sync"
+    "build:mobile": "nuxi generate && npx cap sync",
+    "lint": "eslint --ext .ts,.js,.vue .",
+    "lint:fix": "eslint --ext .ts,.js,.vue . --fix",
+    "format": "prettier --write \"**/*.{ts,js,vue,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,vue,json,css,md}\"",
+    "type-check": "nuxt typecheck"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.1",
@@ -16,10 +21,13 @@
     "@capacitor/cli": "^7.4.1",
     "@capacitor/core": "^7.4.1",
     "@capacitor/geolocation": "^7.1.3",
+    "@capacitor/haptics": "^7.0.3",
     "@heroicons/vue": "^2.2.0",
     "@nuxt/image": "^1.10.0",
     "@nuxtjs/google-fonts": "^3.2.0",
     "@nuxtjs/tailwindcss": "^6.14.0",
+    "@pinia/nuxt": "^0.11.3",
+    "@supabase/supabase-js": "^2.95.3",
     "@tailwindcss/vite": "^4.1.8",
     "@vueuse/core": "^13.5.0",
     "geolib": "^3.3.4",
@@ -31,5 +39,15 @@
     "typescript": "^5.8.3",
     "vue": "^3.5.15",
     "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@nuxt/eslint-config": "^1.13.0",
+    "@types/leaflet": "^1.9.21",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "prettier": "^3.8.1"
   }
 }

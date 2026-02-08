@@ -2,7 +2,7 @@
 
 import { useSidebarStore } from '~/stores/sidebar'
 const sidebarStore = useSidebarStore()
-const { getLocation } = useUserLocation()
+const { stopTracking, startTracking } = useUserLocation()
 const isMobile = ref(false)
 
 function handleResize() {
@@ -13,27 +13,31 @@ function handleResize() {
 onMounted(async () => {
   handleResize()
   window.addEventListener('resize', handleResize)
-  await getLocation()
+  startTracking()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
+  stopTracking()
 })
 </script>
 <template>
   <div class="flex flex-col h-screen">
+    <!-- Offline Indicator -->
+    <OfflineIndicator />
+    
     <!-- Navbar (fixed di atas) -->
     <Navbar />
 
     <!-- Wrapper Sidebar + Content -->
     <div class="flex flex-1 overflow-hidden">
       <!-- Sidebar -->
-      <Sidebar class="hidden lg:block" />
+      <!-- <Sidebar class="hidden lg:block" /> -->
 
       <!-- Content -->
-      <main class="flex-1 overflow-y-auto bg-white transition-all duration-300"
-            :style="{ marginLeft: `${sidebarStore.width}px`, marginTop: `75px` }">
-        <slot />
+      <main class="flex-1 overflow-y-auto bg-gray-50 transition-all duration-300"
+            :style="{ marginTop: `64px` }">
+        <slot></slot>
       </main>
     </div>
 

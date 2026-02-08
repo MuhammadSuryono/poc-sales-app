@@ -1,4 +1,4 @@
-export interface BreadCrumb {
+                                                                            WE.Q,                                                         export interface BreadCrumb {
     label: string,
     path?: string,
     active: boolean,

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
 
 const props = defineProps<{
   modelValue: string
@@ -28,7 +27,7 @@ function onInput(event: Event) {
         @input="onInput"
         :placeholder="placeholder || 'Search...'"
         class="outline-none text-sm w-full"
-        name="anything-random-{{ Math.random().toString(36).substring(7) }}"
+        :name="'anything-random-' + Math.random().toString(36).substring(7)"
       />
     </div>
   </div>

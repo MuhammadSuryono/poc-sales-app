@@ -13,8 +13,18 @@ export const useNumber = () => {
     })
   }
 
+  function setShortNumberFormat(value: number) {
+    if (value >= 1000000) {
+      return (value / 1000000).toFixed(1) + ' jt'
+    } else if (value >= 1000) {
+      return (value / 1000).toFixed(0) + ' rb'
+    }
+    return value.toString()
+  }
+
   return {
     setNumberFormat,
     setNumberFormatWithSeparator,
+    setShortNumberFormat,
   }
 }

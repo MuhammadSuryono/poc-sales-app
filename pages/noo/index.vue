@@ -1,6 +1,6 @@
 <template>
   <div>
-    <CardNavbarBack title="Daftar New Contact" />
+    <CardNavbarBack title="Daftar Contact" />
     <div class="flex flex-col px-3 py-5">
       <div class="flex w-full justify-end mb-3">
         <ButtonPrimary text="Buat New Contact" @click="showModal = true"/>

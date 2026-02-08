@@ -1,20 +1,27 @@
 <template>
-  <div class="flex flex-row gap-2 justify-between items-center text-center border rounded-sm py-3" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-    <div class="flex flex-col gap-1 px-2 sm:px-3 md:px-5">
-      <span class="font-bold text-md sm:text-lg">{{ allTiket.length }}</span>
-      <span class="text-xs sm:text-sm text-gray-400">Daftar Kunjungan</span>
+  <div class="grid grid-cols-2 gap-2 sm:gap-3">
+    <!-- Total Kunjungan -->
+    <div class="stat-item bg-gray-50 rounded-xl p-2.5 border border-gray-100 flex flex-col items-center justify-center">
+      <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Total</span>
+      <span class="text-xl font-extrabold text-gray-800">{{ allTiket.length }}</span>
     </div>
-    <div class="flex flex-col gap-1 border-l px-2 sm:px-3 md:px-4 lg:px-5">
-      <span class="font-bold text-md sm:text-lg">{{ allTiketTodo.length }}</span>
-      <span class="text-xs sm:text-sm text-gray-400">Belum Dikunjungi</span>
+
+    <!-- Belum Dikunjungi (Todo) -->
+    <div class="stat-item bg-yellow-50 rounded-xl p-2.5 border border-yellow-100 flex flex-col items-center justify-center">
+      <span class="text-[10px] text-yellow-600 font-bold uppercase tracking-wider mb-0.5">Pending</span>
+      <span class="text-xl font-extrabold text-java-teal">{{ allTiketTodo.length }}</span>
     </div>
-    <div class="flex flex-col gap-1 border-l px-2 sm:px-3 md:px-4 lg:px-5">
-      <span class="font-bold text-md sm:text-lg">{{ allTiketInProgress.length }}</span>
-      <span class="text-xs sm:text-sm text-gray-400">Sedang Dikunjungi</span>
+
+    <!-- Sedang Dikunjungi (In-Progress) -->
+    <div class="stat-item bg-blue-50 rounded-xl p-2.5 border border-blue-100 flex flex-col items-center justify-center">
+      <span class="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-0.5">Active</span>
+      <span class="text-xl font-extrabold text-primary">{{ allTiketInProgress.length }}</span>
     </div>
-    <div class="flex flex-col gap-1 border-l px-2 sm:px-3 md:px-4 lg:px-5">
-      <span class="font-bold text-md sm:text-lg">{{ allTiketFinish.length }}</span>
-      <span class="text-xs sm:text-sm text-gray-400">Sudah Dikunjungi</span>
+
+    <!-- Sudah Dikunjungi (Finish) -->
+    <div class="stat-item bg-green-50 rounded-xl p-2.5 border border-green-100 flex flex-col items-center justify-center">
+      <span class="text-[10px] text-green-600 font-bold uppercase tracking-wider mb-0.5">Done</span>
+      <span class="text-xl font-extrabold text-success">{{ allTiketFinish.length }}</span>
     </div>
   </div>
 </template>
@@ -24,9 +31,9 @@ import { useUserStore } from '~/stores/user'
 import type { Tiket } from '~/types/user'
 
 const allTiket = computed((): Tiket[] => useUserStore().getAllTiketUser())
-const allTiketTodo = computed((): Tiket[] => allTiket.value.filter(tiket => tiket.visitStatus === 'TODO'))
-const allTiketInProgress = computed((): Tiket[] => allTiket.value.filter(tiket => tiket.visitStatus === 'INPROGRESS'))
-const allTiketFinish = computed((): Tiket[] => allTiket.value.filter(tiket => tiket.visitStatus === 'FINISH'))
+const allTiketTodo = computed((): Tiket[] => allTiket.value.filter(tiket => tiket.visit_status === 'TODO'))
+const allTiketInProgress = computed((): Tiket[] => allTiket.value.filter(tiket => tiket.visit_status === 'INPROGRESS'))
+const allTiketFinish = computed((): Tiket[] => allTiket.value.filter(tiket => tiket.visit_status === 'FINISH'))
 
 </script>
 

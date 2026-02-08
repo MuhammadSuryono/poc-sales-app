@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="mt-8">
     <CardNavbarBack title="Riwayat Kunjungan" />
-    <div class="flex flex-col gap-1 px-3">
+    <div class="flex flex-col gap-2 px-3">
       <NotFound v-if="historyVisit?.length === 0" text="Data riwayat kunjungan kosong" :use-title="false">
         <template #cta>
           <ButtonRefresh :action="() => console.log('refresh')" />
@@ -12,75 +12,86 @@
           </div>
         </template>
       </NotFound>
-      <div class="flex flex-row gap-2 bg-white border rounded-sm shadow-sm w-full px-3 py-2 items-start hover:bg-gray-100 hover:cursor-pointer" v-for="(v, i) in historyVisit" :key="i">
-        <div class="flex flex-col gap-0 w-full" @click="setVisitHistorySelected(v)">
-          <div class="flex flex-row justify-between">
-            <span class="text-sm text-gray-400">#salesID</span>
-            <span class="text-sm text-red-500 uppercase">{{ useString.setDateTimeFormat(new Date(v.visitDate)) }}</span>
+      <div
+        v-for="(v, i) in historyVisit"
+        :key="i"
+        class="bg-white border border-gray-100 rounded-xl shadow-sm w-full p-4 hover:bg-gray-50 hover:shadow-md cursor-pointer"
+        @click="setVisitHistorySelected(v)"
+      >
+        <div class="flex items-start justify-between w-full">
+          <div class="flex flex-col">
+            <span class="text-[10px] text-gray-400 uppercase tracking-[0.2em]">#{{ v.user_id }}</span>
+            <span class="text-sm font-bold text-gray-700 uppercase">{{ v.user_visit_name ?? '-' }}</span>
           </div>
-          <span class="text-sm uppercase">{{ v.userVisitName }}</span>
-          <span class="text-sm text-gray-400 truncate mt-2 max-w-[90%]">{{ v.visitNote }}</span>
+          <span class="text-xs text-gray-500">{{ useString.setDateTimeFormat(new Date(v.created_at)) }}</span>
         </div>
+        <div class="mt-2 text-sm text-gray-600 truncate">{{ v.visit_note }}</div>
       </div>
     </div>
     
-    <PopUpModal v-model:show="showModalHistory" header="Informasi Detail Kunjungan">
-      <!-- Body -->
-       <div class="flex flex-col justify-between items-start max-lg:px-0 px-5 max-lg:text-sm">
-        <span class="text-sm flex flex-row gap-2">
-          <MapPinIcon class="h-4 w-4" />
-          <div class="flex flex-col gap-1">
-            <span>{{ historySelected?.visitAddress }}</span>
+    <PopUpModal v-model:show="showModalHistory" header="Detail Riwayat Kunjungan">
+      <div class="flex flex-col gap-6 p-2">
+        <div class="flex flex-col md:flex-row justify-between gap-4 bg-gray-50 p-4 rounded-xl">
+          <div class="flex items-start gap-3">
+            <MapPinIcon class="h-5 w-5 text-java-green mt-0.5" />
+            <div class="flex flex-col">
+              <span class="text-xs font-bold text-gray-700">{{ historySelected?.visitAddress }}</span>
+              <span class="text-[10px] text-gray-500 uppercase">Jarak: {{ historySelected?.visitDistance ? (historySelected?.visitDistance + 'km') : '-' }}</span>
+            </div>
           </div>
-        </span>
-        <div class="flex flex-row gap-2 justify-between items-center w-full mt-3">
-          <span class="font-semibold flex flex-col">Mulai Kunjungan <span class="font-normal text-gray-500">{{ historySelected?.visitCheckIn ? useString.setDateTimeFormat(new Date(historySelected?.visitCheckIn)) : '-' }}</span></span>
-          <span class="font-semibold flex flex-col">Selesai Kunjungan <span class="font-normal text-gray-500">{{ historySelected?.visitCheckOut ? useString.setDateTimeFormat(new Date(historySelected?.visitCheckOut)) : '-' }}</span></span>
+          <div class="flex flex-col gap-2 md:text-right">
+            <div class="flex flex-col">
+              <span class="text-[10px] text-gray-400 uppercase">Waktu Check-In</span>
+              <span class="text-xs font-bold text-gray-700">{{ historySelected?.visitCheckIn ? useString.setDateTimeFormat(new Date(historySelected?.visitCheckIn)) : '-' }}</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[10px] text-gray-400 uppercase">Waktu Check-Out</span>
+              <span class="text-xs font-bold text-gray-700">{{ historySelected?.visitCheckOut ? useString.setDateTimeFormat(new Date(historySelected?.visitCheckOut)) : '-' }}</span>
+            </div>
+          </div>
         </div>
-       </div>
 
-       <div class="flex flex-col gap-1 w-full max-lg:text-sm mt-5">
-        <span>Aktivitas</span>
-        <span class="w-full border rounded-sm max-lg:h-30 h-45 px-3 py-3 text-gray-700 text-sm">{{ historySelected?.visitNote }}</span>
+        <div class="flex flex-col gap-2">
+          <span class="text-sm font-bold text-gray-700">Catatan Aktivitas</span>
+          <div class="bg-white border border-gray-100 p-4 rounded-xl text-sm text-gray-600 italic">
+            {{ historySelected?.visitNote || 'Tidak ada catatan' }}
+          </div>
+        </div>
 
-        <div class="mt-3 flex flex-col gap-1">
-          <span>Foto Produk ({{ historySelected?.visitImage?.product?.length ?? 0 }})</span>
-
-          <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
-            <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
-            <div class="flex flex-row gap-1 overflow-x-auto scrollbar-hide max-w-[90%]">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-gray-700">Foto Produk</span>
+              <span class="text-xs text-gray-400">{{ historySelected?.visitImage?.product?.length ?? 0 }} Foto</span>
+            </div>
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               <div
                 v-for="(im, i) in historySelected?.visitImage?.product"
                 :key="i"
-                class="min-w-[120px] h-[120px] relative group"
+                class="min-w-[100px] aspect-square"
               >
-                <!-- Gambar -->
                 <NuxtImg
-                  class="h-full w-full object-cover rounded-sm hover:cursor-zoom-in"
+                  class="h-full w-full object-cover rounded-xl shadow-sm border border-gray-100"
                   :src="im"
                   @click="setPreview(im)"
                 />
               </div>
             </div>
           </div>
-          </div>
-        </div>
-        <div class="mt-3 flex flex-col gap-1">
-          <span>Foto Toko / Lokasi / Pelanggan ({{ historySelected?.visitImage?.location?.length ?? 0 }})</span>
 
-          <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
-            <div class="flex flex-row gap-1 overflow-x-auto scrollbar-hide max-w-[90%]">
+          <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-gray-700">Foto Lokasi</span>
+              <span class="text-xs text-gray-400">{{ historySelected?.visit_image?.location?.length ?? 0 }} Foto</span>
+            </div>
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               <div
                 v-for="(im, i) in historySelected?.visitImage?.location"
                 :key="i"
-                class="min-w-[120px] h-[120px] relative group"
+                class="min-w-[100px] aspect-square"
               >
-                <!-- Gambar -->
                 <NuxtImg
-                  class="h-full w-full object-cover rounded-sm hover:cursor-zoom-in"
+                  class="h-full w-full object-cover rounded-xl shadow-sm border border-gray-100"
                   :src="im"
                   @click="setPreview(im)"
                 />
@@ -88,27 +99,41 @@
             </div>
           </div>
         </div>
-       </div>
-    </PopupModal>
-    <div
-      v-if="preview"
-      class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
-      @click="preview = false"
-    >
-      <div class="bg-white rounded shadow-xl z-99 p-2 max-w-[90%] max-h-[90%]">
-        <NuxtImg
-          :src="previewSrc"
-          class="min-w-90 max-w-full min-h-90 max-h-[80vh] object-contain"
-        />
       </div>
-    </div>
+      <template #footer>
+        <div class="flex gap-3 w-full p-2">
+          <ButtonSecondary
+            @click="showModalHistory = false"
+            text="Tutup"
+            class="flex-1"
+          />
+        </div>
+      </template>
+    </PopUpModal>
+    <Transition name="fade">
+      <div
+        v-if="preview"
+        class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
+        @click="preview = false"
+      >
+        <button class="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors">
+          <XMarkIcon class="h-8 w-8" />
+        </button>
+        <div class="max-w-full max-h-full">
+          <NuxtImg
+            :src="previewSrc"
+            class="max-w-[90vw] max-h-[85vh] object-contain rounded-xl shadow-2xl"
+          />
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useUserStore } from '~/stores/user'
 import type { VisitHistory } from '~/types/user'
-import { MapPinIcon, ArchiveBoxXMarkIcon } from '@heroicons/vue/24/outline'
+import { MapPinIcon, ArchiveBoxXMarkIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
 const useString = useUseString()
@@ -118,9 +143,7 @@ const showModalHistory = ref<boolean>(false);
 const historySelected = ref<VisitHistory>({} as VisitHistory)
 const preview = ref<boolean>(false)
 const previewSrc = ref<string>("")
-const historyVisit = computed(() => {
-  return useStore.visitHistory?.filter((visit) => visit?.customerNo === customerId) ?? []
-})
+const historyVisit = computed(() => useStore.visitHistory || [])
 
 const setVisitHistorySelected = (visit: VisitHistory) => {
   showModalHistory.value = true
@@ -130,6 +153,10 @@ const setPreview = (src: string) => {
   preview.value = true
   previewSrc.value = src
 }
+
+onMounted(async () => {
+  await useStore.fetchVisitHistory(customerId)
+})
 
 </script>
 

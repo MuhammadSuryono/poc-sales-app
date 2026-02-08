@@ -1,17 +1,24 @@
 <template>
-  <div class="flex flex-row gap-2 justify-between items-center border rounded-sm py-3 px-3" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-    <div class="flex flex-row gap-1">
-      <UserCircleIcon class="w-8 h-8 text-primary" />
+  <div class="grid grid-cols-2 gap-3">
+    <!-- Customer Count -->
+    <div class="stat-item-alt bg-teal-50 rounded-xl p-3 border border-teal-100 flex items-center gap-2">
+      <div class="p-1.5 bg-teal-100 rounded-lg">
+        <UserCircleIcon class="w-5 h-5 text-java-teal" />
+      </div>
       <div class="flex flex-col">
-        <span class="text-sm font-bold">{{ statistic?.TotalCustomer }}</span>
-        <span class="text-xs font-normal text-gray-400">Pelanggan</span>
+        <span class="text-lg font-bold text-gray-800">{{ statistic?.TotalCustomer }}</span>
+        <span class="text-[9px] font-bold text-teal-700 uppercase leading-none">Pelanggan</span>
       </div>
     </div>
-    <div class="flex flex-row gap-1">
-      <BanknotesIcon class="w-8 h-8 text-primary" />
+
+    <!-- Transaction Total -->
+    <div class="stat-item-alt bg-indigo-50 rounded-xl p-3 border border-indigo-100 flex items-center gap-2">
+      <div class="p-1.5 bg-indigo-100 rounded-lg">
+        <BanknotesIcon class="w-5 h-5 text-indigo-600" />
+      </div>
       <div class="flex flex-col">
-        <span class="text-sm font-bold">{{ useString.setNumberFormat(statistic?.totalTransaction ?? 0) }}</span>
-        <span class="text-xs font-normal text-gray-400">Transaksi</span>
+        <span class="text-lg font-bold text-gray-800">{{ useString.setShortNumberFormat(statistic?.totalTransaction ?? 0) }}</span>
+        <span class="text-[9px] font-bold text-indigo-700 uppercase leading-none">Transaksi</span>
       </div>
     </div>
   </div>

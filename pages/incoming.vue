@@ -1,392 +1,498 @@
 <template>
-  <div class="bg-white w-full shadow-sm rounded-sm px-3 py-3 flex flex-row gap-3">
-    <div class="h-screen[calc(100vh-12rem)] lg:border-r w-full lg:w-[30%] flex flex-col gap-1 pr-2"
-        :class="{'hidden lg:block': showDetail, 'block': !showDetail}">
-      <FormInput v-model="search" placeholder="Search data..." class="w-full">
-        <template #icon>
-          <MagnifyingGlassIcon class="h-3 w-3" />
-        </template>
-      </FormInput>
+  <div class="incoming-page">
+    <!-- Master-Detail Layout -->
+    <div class="layout-container">
+      <!-- Customer List (Master) -->
+      <div 
+        class="customer-list-panel"
+        :class="{ 'hidden lg:block': showDetail, 'block': !showDetail }"
+      >
+        <!-- Search Bar -->
+        <div class="search-container">
+          <FormInput 
+            v-model="search" 
+            placeholder="Cari customer..." 
+            class="w-full"
+          >
+            <template #icon>
+              <MagnifyingGlassIcon class="h-4 w-4 text-gray-400" />
+            </template>
+          </FormInput>
+        </div>
 
-      <div class="flex flex-col mt-5 h-[calc(100vh-12rem)] overflow-auto  scrollbar-hide">
-        <CustomerIncoming v-for="(dt, i) in allTiket" :tiketData="dt" :key="i" @detail="goToIncomingPageDetail" />
+        <!-- Customer Cards -->
+        <div class="customer-list scrollbar-hide">
+          <CustomerIncoming 
+            v-for="(dt, i) in allTiket" 
+            :tiketData="dt" 
+            :key="i" 
+            @detail="goToIncomingPageDetail"
+            class="animate-slide-up"
+          />
+        </div>
+      </div>
+
+      <!-- Detail Panel -->
+      <div 
+        class="detail-panel"
+        :class="{ 'block': showDetail, 'hidden lg:block': !showDetail }"
+      >
+        <!-- Empty State -->
+        <div v-if="!showDetail" class="empty-state">
+          <div class="empty-icon">
+            <UserGroupIcon class="h-16 w-16 text-gray-300" />
+          </div>
+          <span class="text-lg font-semibold text-gray-400">Pilih customer untuk melihat detail</span>
+        </div>
+
+        <!-- Customer Detail -->
+        <div v-else class="detail-content animate-fade-in">
+          <!-- Header -->
+          <div class="detail-header bg-gradient-java-hero">
+            <button 
+              @click="showDetail = false" 
+              class="lg:hidden back-button"
+            >
+              <ChevronLeftIcon class="h-6 w-6 text-white" />
+            </button>
+            <div class="flex-1">
+              <h2 class="text-xl font-bold text-white">{{ detailTiket?.customerName }}</h2>
+              <p class="text-sm text-label-secondary tracking-wide uppercase">{{ detailTiket?.customerNo }}</p>
+            </div>
+            <div 
+              class="status-badge"
+              :class="{
+                'bg-red-500': detailTiket?.status === 'MACET',
+                'bg-success': detailTiket?.status === 'LANCAR'
+              }"
+            >
+              {{ detailTiket?.status }}
+            </div>
+          </div>
+
+          <!-- Scrollable Content -->
+          <div class="detail-scroll-area scrollbar-hide">
+            <!-- Customer Info Card -->
+            <div class="info-card glass-light shadow-sm">
+              <div class="card-header border-b border-gray-100 mb-4 pb-2 flex items-center gap-2">
+                <UserIcon class="h-5 w-5 text-primary" />
+                <h3 class="font-bold text-gray-800">Informasi Pelanggan</h3>
+              </div>
+              
+              <div class="info-grid overflow-auto scrollbar-hide">
+                <div class="info-item">
+                  <span class="info-label">Customer No.</span>
+                  <span class="info-value font-medium">{{ detailTiket?.customerNo }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">No. KTP/NPWP</span>
+                  <span class="info-value">{{ detailTiket?.identityNumber ?? '-' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Nama</span>
+                  <span class="info-value">{{ detailTiket?.customerName ?? '-' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Telepon</span>
+                  <span class="info-value">{{ detailTiket?.customerPhone ?? '-' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Badan Usaha</span>
+                  <span class="info-value">{{ detailTiket?.badanUsaha ?? '-' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Balance</span>
+                  <span class="info-value text-primary font-bold">
+                    Rp. {{ numberFormatting.setNumberFormatWithSeparator(detailTiket?.balance) }}
+                  </span>
+                </div>
+                <div class="info-item col-span-2">
+                  <span class="info-label">Alamat 1</span>
+                  <span class="info-value">{{ detailTiket?.alamat ?? '-' }}</span>
+                </div>
+                <div class="info-item col-span-2">
+                  <span class="info-label">Alamat 2</span>
+                  <span class="info-value">{{ detailTiket?.alamat2 ?? '-' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity Tabs -->
+            <div class="activity-section">
+              <!-- Tab Buttons -->
+              <div class="tab-buttons bg-gray-100 p-1 rounded-xl flex gap-1 w-fit mb-4">
+                <button 
+                  class="tab-button"
+                  :class="{ 'tab-active': tabActive === 'visit' }"
+                  @click="setTabActive('visit')"
+                >
+                  <ClockIcon class="h-4 w-4" />
+                  <span>Kunjungan</span>
+                </button>
+                <button 
+                  class="tab-button"
+                  :class="{ 'tab-active': tabActive === 'history' }"
+                  @click="setTabActive('history')"
+                >
+                  <CurrencyDollarIcon class="h-4 w-4" />
+                  <span>Balance</span>
+                </button>
+              </div>
+
+              <!-- Visit History Tab -->
+              <div v-if="tabActive === 'visit'" class="tab-content flex flex-col gap-3">
+                <div 
+                  v-for="(v, i) in historyVisit" 
+                  :key="i"
+                  class="visit-card glass-light hover:border-primary transition-base cursor-pointer p-4 border rounded-xl"
+                  @click="setVisitHistorySelected(v)"
+                >
+                  <div class="visit-header flex justify-between items-center mb-2">
+                    <span class="visit-id text-[10px] text-gray-400 uppercase tracking-tighter">#VISIT{{ i + 1 }}</span>
+                    <span class="visit-date text-xs font-semibold text-java-green">{{ useString.setDateTimeFormat(new Date(v.visitDate || '')) }}</span>
+                  </div>
+                  <div class="visit-user font-bold text-gray-800 text-sm mb-1">{{ v.userVisitName }}</div>
+                  <div class="visit-note text-xs text-gray-500 line-clamp-2 italic">" {{ v.visitNote }} "</div>
+                </div>
+                <div v-if="historyVisit.length === 0" class="text-center py-10 text-gray-400 italic">
+                  Belum ada riwayat kunjungan
+                </div>
+              </div>
+
+              <!-- Balance History Tab -->
+              <div v-if="tabActive === 'history'" class="tab-content">
+                <div class="balance-table-container overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+                  <table class="w-full text-left text-xs font-mono">
+                    <thead class="bg-gray-50 text-gray-600">
+                      <tr>
+                        <th class="p-3">#Invoice</th>
+                        <th class="p-3">Tanggal</th>
+                        <th class="p-3">Jenis</th>
+                        <th class="p-3 text-right">Debit</th>
+                        <th class="p-3 text-right">Kredit</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                      <tr v-for="(h, i) in historyTransaction" :key="i" class="hover:bg-gray-50">
+                        <td class="p-3 font-semibold">{{ h.invoiceNo }}</td>
+                        <td class="p-3">{{ useString.setDateFormat(new Date(h.date || '')) }}</td>
+                        <td class="p-3 uppercase text-[10px]">{{ h.type }}</td>
+                        <td class="p-3 text-right text-success">{{ h.debit || 0 }}</td>
+                        <td class="p-3 text-right text-red-500">{{ h.credit || 0 }}</td>
+                      </tr>
+                    </tbody>
+                    <tfoot class="bg-gray-50 font-bold border-t-2 border-gray-200">
+                      <tr>
+                        <td colspan="4" class="p-3 text-right">Grand Total:</td>
+                        <td class="p-3 text-right">Rp. 10.000</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Footer -->
+          <div 
+            v-if="detailTiket?.visitStatus !== 'FINISH'" 
+            class="action-footer bg-white border-t border-gray-100 p-4 shadow-[0_-4px_15px_-3px_rgba(0,0,0,0.05)]"
+          >
+            <div class="action-container flex flex-col md:flex-row gap-4 items-center justify-between max-w-4xl mx-auto">
+              <div class="action-info flex items-start gap-3 flex-1">
+                <div class="p-2 bg-java-green/10 rounded-lg">
+                  <MapPinIcon class="h-5 w-5 text-java-green" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-gray-800">{{ address || 'Mencari lokasi...' }}</span>
+                  <span class="text-[10px] text-gray-500">{{ detailTiket?.visitDistance }}km dari lokasi terdaftar</span>
+                </div>
+              </div>
+              
+              <div class="action-buttons flex gap-3 w-full md:w-auto">
+                <ButtonPrimary 
+                  v-if="detailTiket?.visitStatus === 'TODO'" 
+                  text="Check In" 
+                  @click="checkIn"
+                  class="flex-1 md:flex-none md:min-w-[150px]"
+                />
+                <ButtonDanger 
+                  v-if="detailTiket?.visitStatus === 'INPROGRESS'" 
+                  text="Check Out" 
+                  @click="checkOut"
+                  class="flex-1 md:flex-none md:min-w-[150px]"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="w-full lg:w-[70%] flex h-screen[calc(100vh-12rem)] overflow-auto  scrollbar-hide items-center text-center justify-center"
-        :class="{'block': showDetail, 'hidden lg:block': !showDetail}"  v-if="!showDetail">
-      <span class="text-lg font-semibold">Tidak ada data</span>
-    </div>
-    <div class="w-full lg:w-[70%] flex flex-col gap-3 h-screen[calc(100vh-16rem)] overflow-auto  scrollbar-hide"
-        :class="{'block': showDetail, 'hidden lg:block': !showDetail}" v-if="showDetail">
-      <div class="flex flex-row gap-4 justify-start items-center border-b py-3 hidden lg:flex">
-        <span class="font-semibold text-lg">{{ detailTiket?.customerName }}</span>
-      </div>
-      <div class="max-lg:h-[calc(100vh-14rem)] h-[calc(100vh-16rem)] overflow-auto flex flex-col gap-3  scrollbar-hide">
-        <div class="border px-3 py-2">
-          <span class="text-md">Informasi Pelanggan</span>
-          <div class="flex flex-row gap-2 text-xs">
-            <div class="w-[50%] flex flex-col gap-1">
-              <div class="flex flex-col mt-4">
-                <span class="font-semibold ">Customer No.</span>
-                <span class="">{{ detailTiket?.customerNo }}</span>
-              </div>
-              <div class="flex flex-col mt-4">
-                <span class="font-semibold ">No. KTP/NPWP</span>
-                <span class="">{{ detailTiket?.identityNumber ?? '-' }}</span>
-              </div>
-              <div class="flex flex-col mt-4">
-                <span class="font-semibold ">Customer Name</span>
-                <span class="">{{ detailTiket?.customerName ?? '-' }}</span>
-              </div>
-              <div class="flex flex-col mt-4">
-                <span class="font-semibold ">Customer Phone</span>
-                <span class="">{{ detailTiket?.customerPhone ?? '-' }}</span>
-              </div>
-              <div class="flex flex-col mt-4">
-                <span class="font-semibold ">Badan Usaha</span>
-                <span class="">{{ detailTiket?.badanUsaha ?? '-' }}</span>
-              </div>
-              <div class="flex flex-col mt-4">
-                <span class="font-semibold ">Alamat 1</span>
-                <span class="">{{ detailTiket?.alamat ?? '-' }}</span>
-              </div>
-              <div class="flex flex-col mt-4">
-                <span class="font-semibold ">Alamat 2</span>
-                <span class="">{{ detailTiket?.alamat2 ?? '-' }}</span>
-              </div>
-            </div>
-            <div class="w-[50%] flex flex-col gap-1">
-              <div class="flex flex-col mt-4">
-                <span class="font-semibold ">Nama Penjamin</span>
-                <span class="">-</span>
-              </div>
-              <div class="flex flex-col mt-4">
-                <span class="font-semibold ">Telepon Penjamin</span>
-                <span class="">-</span>
-              </div>
-              <div class="flex flex-col mt-4">
-                <span class="font-semibold ">Balance</span>
-                <span class="hover:cursor-pointer hover:underline hover:text-blue-500">Rp. {{ numberFormatting.setNumberFormatWithSeparator(detailTiket?.balance) }}</span>
-              </div>
-              <div class="flex flex-col mt-4">
-                <span class="font-semibold ">Status</span>
-                <span class="font-semibold" :class="{'text-red-700': detailTiket?.status === 'MACET', 'text-success': detailTiket?.status === 'LANCAR'}">{{ detailTiket?.status }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <span class="text-md mt-5">Aktivitas</span>
-        <div class="flex flex-row gap-3 border rounded-md w-fit text-sm py-1 px-2 items-center text-center justify-center text-gray-700">
-          <span class="rounded-xs hover:cursor-pointer hover:bg-gray-100 py-1 px-2" :class="{'active': tabActive === 'visit'}" @click="setTabActive('visit')">Histori Kunjungan</span>
-          <span class="rounded-xs hover:cursor-pointer hover:bg-gray-100 py-1 px-2" :class="{'active': tabActive === 'history'}" @click="setTabActive('history')">Balance</span>
-        </div>
-        <div class="flex flex-col gap-1" v-if="tabActive === 'visit'">
-          <div class="flex flex-row gap-2 bg-white border rounded-sm shadow-sm w-full px-3 py-2 items-start hover:bg-gray-100 hover:cursor-pointer" v-for="(v, i) in historyVisit" :key="i">
-            <div class="flex flex-col gap-0 w-full" @click="setVisitHistorySelected(v)">
-              <div class="flex flex-row justify-between">
-                <span class="text-xs text-gray-400">#salesID</span>
-                <span class="text-xs text-red-500 uppercase">{{ useString.setDateTimeFormat(new Date(v.visitDate)) }}</span>
-              </div>
-              <span class="text-sm uppercase">{{ v.userVisitName }}</span>
-              <span class="text-xs text-gray-400 truncate mt-2 max-w-[90%]">{{ v.visitNote }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="flex flex-col gap-1" v-if="tabActive === 'history'">
-          <div class="lg:w-full mx-auto bg-white p-4 rounded shadow font-mono text-sm">
-            <!-- Header -->
-            <div class="grid grid-cols-5 font-bold border-b pb-2">
-              <div>#Invoice</div>
-              <div>Deskripsi</div>
-              <div class="text-center">Qty</div>
-              <div class="text-right">Subtotal</div>
-              <div class="text-right">Total</div>
-            </div>
-
-            <!-- Data Row -->
-            <div class="grid grid-cols-5 py-2 border-b">
-              <div>111</div>
-              <div>Asa</div>
-              <div class="text-center">1</div>
-              <div class="text-right">10.000</div>
-              <div class="text-right">10.000</div>
-            </div>
-
-            <!-- Grand Total -->
-            <div class="grid grid-cols-5 font-bold pt-3">
-              <div class="col-span-4 text-right">Grand Total:</div>
-              <div class="text-right">10.000</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-      <div class="w-full bg-white border-t p-2 rounded-t-md" style="box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.1), 0 -2px 4px -2px rgba(0,0,0,0.1);" v-if="detailTiket?.visitStatus !== 'FINISH'">
-        <div class="flex max-lg:flex-col max-lg:gap-3 items-center justify-between">
-          <span class="text-xs flex flex-row gap-2">
-            <MapPinIcon class="h-4 w-4" />
-            <span class="text-danger" v-if="detailTiket?.visitStatus === 'TODO'">Anda belum melakukan "Check In"</span>
-            <span class="text-danger" v-if="detailTiket?.visitStatus === 'INPROGRESS'">{{ insideRadius ? 'Anda berada di dalam radius' : 'Anda berada di luar radius' }}</span>
-          </span>
-          <div class="flex max-lg:flex-col flex-row gap-2 max-lg:w-full">
-            <ButtonSecondary
-              v-if="detailTiket?.visitStatus === 'INPROGRESS'"
-              @click="showModal = true"
-              text="Input Detail Kunjungan"
-            />
-            <ButtonSuccess v-if="detailTiket?.visitStatus === 'TODO'" text="Check In" @click="checkIn(detailTiket?.lat, detailTiket?.lng)" />
-            <ButtonDanger v-if="detailTiket?.visitStatus === 'INPROGRESS'" text="Check Out" @click="checkOut" />
-          </div>
-        </div>
-      </div>
-    </div>
-    
+    <!-- Visit Modal -->
     <PopUpModal v-model:show="showModal" header="Input Detail Kunjungan">
-      <!-- Body -->
-       <div class="flex flex-row justify-between items-start max-lg:px-0 px-5 max-lg:text-xs">
-        <span class="text-xs flex flex-row gap-2">
-          <MapPinIcon class="h-4 w-4" />
-          <div class="flex flex-col gap-1">
-            <span>{{ detailTiket?.visitAddress }}</span>
-            <span class="text-danger">{{ insideRadius ? 'Anda berada dalam radius ' + detailTiket?.visitDistance + ' meter dari lokasi konsumen' : 'Anda berada di luar radius' }}</span>
-            <span class="flex flex-row gap-1 py-1 px-3 rounded-xs border w-fit cursor-pointer" @click="checkIn(detailTiket?.lat, detailTiket?.lng)" v-if="!insideRadius"><ArrowPathRoundedSquareIcon class="h-4 w-4" /> Ambil Lokasi</span>
-          </div>
-        </span>
-        <div class="flex flex-col gap-2">
-          <span class="font-semibold flex flex-col">Mulai Kunjungan <span class="font-normal text-gray-500">{{ detailTiket?.visitCheckIn ? useString.setDateTimeFormat(new Date(detailTiket?.visitCheckIn)) : '-' }}</span></span>
-          <span class="font-semibold flex flex-col">Selesai Kunjungan <span class="font-normal text-gray-500">{{ detailTiket?.visitCheckOut ? useString.setDateTimeFormat(new Date(detailTiket?.visitCheckOut)) : '-' }}</span></span>
-        </div>
-       </div>
+       <div class="flex flex-col gap-6 p-2">
+         <div class="bg-gray-50 p-4 rounded-xl flex items-start gap-3">
+            <MapPinIcon class="h-5 w-5 text-java-green mt-0.5" />
+            <div class="flex flex-col gap-1">
+              <span class="text-xs font-bold text-gray-700">{{ address || 'Mencari lokasi...' }}</span>
+              <span class="text-[10px] text-gray-500 uppercase">Jarak: {{ detailTiket?.visitDistance }}km</span>
+            </div>
+         </div>
 
-       <div class="flex flex-col gap-1 w-full max-lg:text-xs">
-        <span>Aktivitas</span>
-        <textarea class="w-full border rounded-sm max-lg:h-30 h-45 px-3 py-3 text-gray-700 text-sm" v-model="visitNote"></textarea>
+         <div class="flex flex-col gap-2">
+            <span class="text-sm font-bold text-gray-700">Catatan Aktivitas</span>
+            <textarea 
+              class="w-full border border-gray-200 rounded-xl min-h-[120px] p-4 text-sm text-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+              placeholder="Masukkan catatan kunjungan..."
+              v-model="visitNote"
+            ></textarea>
+         </div>
 
-        <div class="mt-3 flex flex-col gap-1">
-          <span>Foto Produk ({{ detailTiket?.visitImage?.product?.length ?? 0 }})</span>
-
-          <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
-            <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
-            <div class="flex flex-row gap-1 overflow-x-auto scrollbar-hide max-w-[90%]">
+         <!-- Photo Product -->
+         <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-gray-700">Foto Produk</span>
+              <span class="text-xs text-gray-400">{{ detailTiket?.visitImage?.product?.length ?? 0 }} Foto</span>
+            </div>
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               <div
                 v-for="(im, i) in detailTiket?.visitImage?.product"
                 :key="i"
-                class="min-w-[120px] h-[120px] relative group"
+                class="min-w-[100px] aspect-square relative group"
               >
-                <!-- Gambar -->
                 <NuxtImg
-                  class="h-full w-full object-cover rounded-xs hover:cursor-zoom-in"
+                  class="h-full w-full object-cover rounded-xl shadow-sm border border-gray-100"
                   :src="im"
                   @click="setPreview(im)"
                 />
-
-                <!-- Tombol hapus di pojok kanan atas -->
                 <button
-                  @click.stop="removePhoto('location', i)"
-                  class="absolute top-1 right-1 bg-black bg-opacity-60 text-white text-[10px] px-1 rounded-sm hover:bg-red-600 transition"
-                  title="Hapus gambar"
+                  @click.stop="removePhoto('product', i)"
+                  class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 shadow-lg hover:scale-110 transition-transform"
                 >
-                  ✕
+                  <XMarkIcon class="h-3 w-3" />
                 </button>
               </div>
+              <div 
+                class="min-w-[100px] aspect-square rounded-xl bg-gray-100 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 text-gray-400 cursor-pointer hover:bg-gray-200 transition-colors"
+                @click="takePhoto('product')"
+              >
+                <CameraIcon class="h-5 w-5" />
+                <span class="text-[10px] font-medium">Tambah</span>
+              </div>
             </div>
+         </div>
 
-            <!-- Add Button -->
-            <div class="min-w-[120px] h-[120px] rounded-xs bg-gray-200 flex items-center justify-center text-gray-500 text-sm cursor-pointer hover:bg-gray-100" 
-              @click="takePhoto('product')">
-              <CameraIcon class="h-4 w-4" />
+         <!-- Photo Location -->
+         <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-gray-700">Foto Toko / Lokasi</span>
+              <span class="text-xs text-gray-400">{{ detailTiket?.visitImage?.location?.length ?? 0 }} Foto</span>
             </div>
-          </div>
-          </div>
-        </div>
-        <div class="mt-3 flex flex-col gap-1">
-          <span>Foto Toko / Lokasi / Pelanggan ({{ detailTiket?.visitImage?.location?.length ?? 0 }})</span>
-
-          <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
-            <div class="flex flex-row gap-1 overflow-x-auto scrollbar-hide max-w-[90%]">
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               <div
                 v-for="(im, i) in detailTiket?.visitImage?.location"
                 :key="i"
-                class="min-w-[120px] h-[120px] relative group"
+                class="min-w-[100px] aspect-square relative group"
               >
-                <!-- Gambar -->
                 <NuxtImg
-                  class="h-full w-full object-cover rounded-xs hover:cursor-zoom-in"
+                  class="h-full w-full object-cover rounded-xl shadow-sm border border-gray-100"
                   :src="im"
                   @click="setPreview(im)"
                 />
-
-                <!-- Tombol hapus di pojok kanan atas -->
                 <button
                   @click.stop="removePhoto('location', i)"
-                  class="absolute top-1 right-1 bg-black bg-opacity-60 text-white text-[10px] px-1 rounded-sm hover:bg-red-600 transition"
-                  title="Hapus gambar"
+                  class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 shadow-lg hover:scale-110 transition-transform"
                 >
-                  ✕
+                  <XMarkIcon class="h-3 w-3" />
                 </button>
               </div>
+              <div 
+                class="min-w-[100px] aspect-square rounded-xl bg-gray-100 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 text-gray-400 cursor-pointer hover:bg-gray-200 transition-colors"
+                @click="takePhoto('location')"
+              >
+                <CameraIcon class="h-5 w-5" />
+                <span class="text-[10px] font-medium">Tambah</span>
+              </div>
             </div>
-
-            <!-- Add Button -->
-            <div class="min-w-[120px] h-[120px] rounded-xs bg-gray-200 flex items-center justify-center text-gray-500 text-sm cursor-pointer hover:bg-gray-100" 
-              @click="takePhoto('location')">
-              <CameraIcon class="h-4 w-4" />
-            </div>
-          </div>
-        </div>
+         </div>
        </div>
 
-      <!-- Custom Footer -->
       <template #footer v-if="detailTiket?.visitStatus !== 'FINISH'">
-        <ButtonSecondary
-          @click="showModal = false"
-          text="Cancel"
-        />
-        <ButtonPrimary
-          @click="saveVisitData"
-          text="Save"
-        />
+        <div class="flex gap-3 w-full p-2">
+          <ButtonSecondary
+            @click="showModal = false"
+            text="Batal"
+            class="flex-1"
+          />
+          <ButtonPrimary
+            @click="saveVisitData"
+            text="Simpan Data"
+            class="flex-1"
+          />
+        </div>
       </template>
-    </PopupModal>
+    </PopUpModal>
 
-    
-    
-    <PopUpModal v-model:show="showModalHistory" header="Informasi Detail Kunjungan">
-      <!-- Body -->
-       <div class="flex flex-row justify-between items-start max-lg:px-0 px-5 max-lg:text-xs">
-        <span class="text-xs flex flex-row gap-2">
-          <MapPinIcon class="h-4 w-4" />
-          <div class="flex flex-col gap-1">
-            <span>{{ historySelected?.visitAddress }}</span>
-          </div>
-        </span>
-        <div class="flex flex-col gap-2">
-          <span class="font-semibold flex flex-col">Mulai Kunjungan <span class="font-normal text-gray-500">{{ historySelected?.visitCheckIn ? useString.setDateTimeFormat(new Date(historySelected?.visitCheckIn)) : '-' }}</span></span>
-          <span class="font-semibold flex flex-col">Selesai Kunjungan <span class="font-normal text-gray-500">{{ historySelected?.visitCheckOut ? useString.setDateTimeFormat(new Date(historySelected?.visitCheckOut)) : '-' }}</span></span>
-        </div>
-       </div>
-
-       <div class="flex flex-col gap-1 w-full max-lg:text-xs">
-        <span>Aktivitas</span>
-        <span class="w-full border rounded-sm max-lg:h-30 h-45 px-3 py-3 text-gray-700 text-sm">{{ historySelected?.visitNote }}</span>
-
-        <div class="mt-3 flex flex-col gap-1">
-          <span>Foto Produk ({{ historySelected?.visitImage?.product?.length ?? 0 }})</span>
-
-          <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
-            <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
-            <div class="flex flex-row gap-1 overflow-x-auto scrollbar-hide max-w-[90%]">
-              <div
-                v-for="(im, i) in historySelected?.visitImage?.product"
-                :key="i"
-                class="min-w-[120px] h-[120px] relative group"
-              >
-                <!-- Gambar -->
-                <NuxtImg
-                  class="h-full w-full object-cover rounded-xs hover:cursor-zoom-in"
-                  :src="im"
-                  @click="setPreview(im)"
-                />
+    <!-- History Detail Modal -->
+    <PopUpModal v-model:show="showModalHistory" header="Detail Riwayat Kunjungan">
+       <div class="flex flex-col gap-6 p-2">
+         <div class="flex flex-col md:flex-row justify-between gap-4 bg-gray-50 p-4 rounded-xl">
+            <div class="flex items-start gap-3">
+              <MapPinIcon class="h-5 w-5 text-java-green mt-0.5" />
+              <div class="flex flex-col">
+                <span class="text-xs font-bold text-gray-700">{{ historySelected?.visitAddress }}</span>
+                <span class="text-[10px] text-gray-500 uppercase">Jarak: {{ historySelected?.visitDistance }}km</span>
               </div>
             </div>
-          </div>
-          </div>
-        </div>
-        <div class="mt-3 flex flex-col gap-1">
-          <span>Foto Toko / Lokasi / Pelanggan ({{ historySelected?.visitImage?.location?.length ?? 0 }})</span>
-
-          <div class="flex flex-row gap-1 items-start">
-            <!-- Scrollable Thumbnail Container -->
-            <div class="flex flex-row gap-1 overflow-x-auto scrollbar-hide max-w-[90%]">
-              <div
-                v-for="(im, i) in historySelected?.visitImage?.location"
-                :key="i"
-                class="min-w-[120px] h-[120px] relative group"
-              >
-                <!-- Gambar -->
-                <NuxtImg
-                  class="h-full w-full object-cover rounded-xs hover:cursor-zoom-in"
-                  :src="im"
-                  @click="setPreview(im)"
-                />
+            <div class="flex flex-col gap-2 md:text-right">
+              <div class="flex flex-col">
+                <span class="text-[10px] text-gray-400 uppercase">Waktu Check-In</span>
+                <span class="text-xs font-bold text-gray-700">{{ historySelected?.visitCheckIn ? useString.setDateTimeFormat(new Date(historySelected?.visitCheckIn)) : '-' }}</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[10px] text-gray-400 uppercase">Waktu Check-Out</span>
+                <span class="text-xs font-bold text-gray-700">{{ historySelected?.visitCheckOut ? useString.setDateTimeFormat(new Date(historySelected?.visitCheckOut)) : '-' }}</span>
               </div>
             </div>
-          </div>
-        </div>
+         </div>
+
+         <div class="flex flex-col gap-2">
+            <span class="text-sm font-bold text-gray-700">Catatan Aktivitas</span>
+            <div class="bg-white border border-gray-100 p-4 rounded-xl text-sm text-gray-600 italic">
+              " {{ historySelected?.visitNote || 'Tidak ada catatan' }} "
+            </div>
+         </div>
+
+         <!-- History Photos -->
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <div class="flex flex-col gap-3">
+              <span class="text-sm font-bold text-gray-700">Foto Produk</span>
+              <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <div
+                  v-for="(im, i) in historySelected?.visitImage?.product"
+                  :key="i"
+                  class="min-w-[100px] aspect-square"
+                >
+                  <NuxtImg
+                    class="h-full w-full object-cover rounded-xl shadow-sm border border-gray-100"
+                    :src="im"
+                    @click="setPreview(im)"
+                  />
+                </div>
+              </div>
+           </div>
+           <div class="flex flex-col gap-3">
+              <span class="text-sm font-bold text-gray-700">Foto Lokasi</span>
+              <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <div
+                  v-for="(im, i) in historySelected?.visitImage?.location"
+                  :key="i"
+                  class="min-w-[100px] aspect-square"
+                >
+                  <NuxtImg
+                    class="h-full w-full object-cover rounded-xl shadow-sm border border-gray-100"
+                    :src="im"
+                    @click="setPreview(im)"
+                  />
+                </div>
+              </div>
+           </div>
+         </div>
        </div>
-    </PopupModal>
-    <div
-      v-if="preview"
-      class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
-      @click="preview = false"
-    >
-      <div class="bg-white rounded shadow-xl z-99 p-2 max-w-[90%] max-h-[90%]">
-        <NuxtImg
-          :src="previewSrc"
-          class="min-w-90 max-w-full min-h-90 max-h-[80vh] object-contain"
-        />
+    </PopUpModal>
+
+    <!-- Image Preview Overlay -->
+    <Transition name="fade">
+      <div 
+        v-if="preview" 
+        class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
+        @click="preview = false"
+      >
+        <button class="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors">
+          <XMarkIcon class="h-8 w-8" />
+        </button>
+        <div class="max-w-full max-h-full">
+          <NuxtImg
+            :src="previewSrc"
+            class="max-w-[90vw] max-h-[85vh] object-contain rounded-xl shadow-2xl"
+          />
+        </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ButtonDanger, FormInput } from '#components';
-import { MagnifyingGlassIcon, ArrowPathRoundedSquareIcon, MapPinIcon, CameraIcon } from '@heroicons/vue/24/outline'
-import CustomerIncoming from '~/components/card/CustomerIncoming.vue';
+import { 
+  MagnifyingGlassIcon, 
+  MapPinIcon, 
+  CameraIcon, 
+  ChevronLeftIcon, 
+  UserIcon, 
+  ClockIcon, 
+  CurrencyDollarIcon,
+  XMarkIcon,
+  UserGroupIcon
+} from '@heroicons/vue/24/outline'
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
+import ImageKit from 'imagekit';
 import { useNavbarStore } from '~/stores/navbar';
 import { useUserStore } from '~/stores/user';
 import { type VisitHistory, type Tiket } from '~/types/user';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
-import ImageKit from 'imagekit';
 
+// Stores & State
 const useNavbar = useNavbarStore();
-const allTiket = computed((): Tiket[] => useUserStore().allTiket?.sort((a, b) => {
-  return new Date(b?.lastUpdated).getTime() - new Date(a?.lastUpdated).getTime()
-}))
+const userStore = useUserStore();
+const sysConfig = useSystemConfig();
+const route = useRoute();
+const router = useRouter();
+const useString = useUseString();
+const numberFormatting = useNumber();
 
-const search = ref<string>('')
-const tabActive = ref<string>('visit')
-const showModal = ref<boolean>(false);
-const showModalHistory = ref<boolean>(false);
-const preview = ref<boolean>(false)
-const previewSrc = ref<string>("")
-const showDetail = ref<boolean>(false)
-const visitNote = ref<string>("")
-const route = useRoute()
-const router = useRouter()
-const useString = useUseString()
-const detailTiket = computed(() => {
-  return allTiket.value.find((tiket) => tiket?.customerNo === route?.query?.id) as Tiket
-})
-const historyVisit = computed(() => {
-  return useUserStore().visitHistory?.filter((visit) => visit?.customerNo === route?.query?.id) ?? []
-})
-const historySelected = ref<VisitHistory>({} as VisitHistory)
-const radius = computed(() => useUserStore().tollerance)
-const insideRadius = computed(() => {
-  if (detailTiket.value?.visitDistance) {
-    return detailTiket.value?.visitDistance < radius.value
-  }
-  return false
-})
-const numberFormatting = useNumber()
-
+// Composables
 const {
   coords,
   address,
   getLocation,
   calculateDistance,
+  calculateDistanceRaw,
   isInsideRadius,
-} = useUserLocation()
+} = useUserLocation();
 
-const setTabActive = (tab:string) => {
+// Reactive State
+const allTiket = computed((): Tiket[] => (userStore.allTiket || []).sort((a, b) => {
+  return new Date(b?.lastUpdated || 0).getTime() - new Date(a?.lastUpdated || 0).getTime()
+}))
+
+const search = ref<string>('')
+const tabActive = ref<string>('visit')
+const showModal = ref<boolean>(false)
+const showModalHistory = ref<boolean>(false)
+const preview = ref<boolean>(false)
+const previewSrc = ref<string>("")
+const showDetail = ref<boolean>(false)
+const visitNote = ref<string>("")
+
+// Computed
+const detailTiket = computed(() => {
+  return allTiket.value.find((tiket) => tiket?.customerNo === route?.query?.id) as Tiket
+})
+
+const historyVisit = computed(() => {
+  return userStore.visitHistory?.filter((visit) => visit?.customerNo === route?.query?.id) ?? []
+})
+
+const historySelected = ref<VisitHistory>({} as VisitHistory)
+const radius = computed(() => userStore.tollerance || 100)
+
+const historyTransaction = ref<any[]>([
+  { invoiceNo: 'INV-001', date: '2025-07-12', type: 'SALES', debit: 1000, credit: 0 },
+  { invoiceNo: 'INV-002', date: '2025-07-13', type: 'SALES', debit: 2000, credit: 0 },
+])
+
+// Methods
+const setTabActive = (tab: string) => {
   tabActive.value = tab
 }
 
@@ -400,41 +506,20 @@ const goToIncomingPageDetail = (id: string) => {
   router?.replace({ query: { ...route.query, detail: 'true', id } })
 }
 
-onMounted(() => {
-  if (route.query?.detail) {
-    showDetail.value = true
-    useNavbar.setHeader('BACK', detailTiket?.value?.customerName ?? '-')
-  }
-})
+const setVisitHistorySelected = (visit: VisitHistory) => {
+  showModalHistory.value = true
+  historySelected.value = visit
+}
 
-watch(
-  route,
-  (newRoute) => {
-    if (newRoute?.query?.detail && newRoute?.query?.id) {
-      showDetail.value = true
-      detailTiket.value = allTiket.value.find((tiket) => tiket?.customerNo === newRoute?.query?.id) as Tiket
-      visitNote.value = detailTiket.value?.visitNote
-      useNavbar.setHeader('BACK', detailTiket?.value?.customerName)
-    } else {
-      showDetail.value = false
-      useNavbar.setHeader('MAIN')
-      visitNote.value = ""
-    }
-  },
-  { deep: true }
-)
-
-const jarak = ref<number | null>(null)
-const dalamRadius = ref(false)
-
-const checkIn = async (lat: number, lng: number) => {
+// Visit Actions
+const checkIn = async () => {
   await getLocation()
 
-  if (coords.value) {
-    jarak.value = calculateDistance({ lat, lng })
-    dalamRadius.value = isInsideRadius({ lat, lng }, radius.value)
-
-    if (detailTiket.value?.visitStatus === 'TODO') {
+  if (coords.value && detailTiket.value) {
+    const distanceMeters = calculateDistanceRaw({ lat: detailTiket.value.lat, lng: detailTiket.value.lng })
+    
+    if (distanceMeters !== null) {
+      if (detailTiket.value.visitStatus === 'TODO') {
       detailTiket.value.visitCheckIn = new Date().toISOString()
       detailTiket.value.visitStatus = 'INPROGRESS'
     }
@@ -444,100 +529,274 @@ const checkIn = async (lat: number, lng: number) => {
     detailTiket.value.visitLng = coords.value.lng
     detailTiket.value.visitAddress = address.value
     detailTiket.value.visitDate = new Date().toISOString()
-    detailTiket.value.visitDistance = `${(jarak.value / 1000).toFixed(2)}`
+      detailTiket.value.visitDistance = parseFloat((distanceMeters / 1000).toFixed(2))
+      
+      showModal.value = true
+    }
   }
 }
 
 const saveVisitData = async () => {
-  detailTiket.value.visitNote = visitNote.value
-  showModal.value = false
-  // try {
-  //   await useUserStore().updateTiket(detailTiket.value)
-  //   showModal.value = false
-  // } catch (error) {
-  //   console.error(error)
-  // }
+  if (detailTiket.value) {
+    detailTiket.value.visitNote = visitNote.value
+    showModal.value = false
+  }
 }
 
 const checkOut = async () => {
-  detailTiket.value.visitStatus = 'FINISH'
-  detailTiket.value.lastUpdated = new Date().toISOString()
-  detailTiket.value.visitCheckOut = new Date().toISOString()
-  useUserStore().addToHistory(detailTiket.value)
+  if (detailTiket.value) {
+    detailTiket.value.visitStatus = 'FINISH'
+    detailTiket.value.lastUpdated = new Date().toISOString()
+    detailTiket.value.visitCheckOut = new Date().toISOString()
+    userStore.addToHistory(detailTiket.value)
+  }
 }
 
-const takePhoto = async (loc: string) => {
-  const photo = await Camera.getPhoto({
-    quality: 80,
-    resultType: CameraResultType.Base64,
-    source: CameraSource.Camera // bisa juga .Prompt atau .Photos
-  })
+// Media Actions
+const takePhoto = async (loc: 'location' | 'product') => {
+  try {
+    const photo = await Camera.getPhoto({
+      quality: 80,
+      resultType: CameraResultType.Base64,
+      source: CameraSource.Camera
+    })
 
-  const base64 = photo.base64String
-  if(!detailTiket.value.visitImage) {
-    detailTiket.value.visitImage = {
-      location: [],
-      product: [],
+    const base64 = photo.base64String
+    if(!detailTiket.value.visitImage) {
+      detailTiket.value.visitImage = { location: [], product: [] }
     }
-  }
 
-  let url = ''
-  if(base64) {
-    url = await uploadFileImage(base64)
-  }
-
-  if (loc === 'location' && url ) {
-    detailTiket.value.visitImage.location?.push(url)
-  } else if (loc === 'product' && url ) {
-    detailTiket.value.visitImage.product?.push(url)
-  } else {
-    throw new Error('Ivalid location type')
+    if(base64) {
+      const url = await uploadFileImage(base64)
+      if (loc === 'location') detailTiket.value.visitImage.location?.push(url)
+      else detailTiket.value.visitImage.product?.push(url)
+    }
+  } catch (error) {
+    console.error('Camera Error:', error)
   }
 }
 
-const removePhoto = (loc: string, index: number) => {
-  if (loc === 'location' && detailTiket.value.visitImage?.location) {
-    detailTiket.value.visitImage.location.splice(index, 1)
-  } else if (loc === 'product' && detailTiket.value.visitImage?.product) {
-    detailTiket.value.visitImage.product.splice(index, 1)
-  } else {
-    console.error('Invalid location type')
-  }
+const removePhoto = (loc: 'location' | 'product', index: number) => {
+  if (!detailTiket.value.visitImage) return
+  if (loc === 'location') detailTiket.value.visitImage.location?.splice(index, 1)
+  else detailTiket.value.visitImage.product?.splice(index, 1)
 }
 
-const setVisitHistorySelected = (visit: VisitHistory) => {
-  showModalHistory.value = true
-  historySelected.value = visit
-}
-
-const uploadFileImage = async (base64: string) => {
-  var imageKit = new ImageKit({
-    publicKey: 'public_YDItt1VSL6u4i7HNJbibSbKvz8c=',
-    privateKey: 'private_dOZ52fF/0ykIueIq5Xgao9SFbMs=',
-    urlEndpoint: 'https://ik.imagekit.io/yono1997',
+const uploadFileImage = async (base64: string): Promise<string> => {
+  const imageKit = new ImageKit({
+    publicKey: sysConfig.public.imagekitPublicKey,
+    privateKey: sysConfig.public.imagekitPrivateKey,
+    urlEndpoint: sysConfig.public.imagekitUrlEndpoint,
   })
-  return new Promise<string>((resolve, reject) => {
-    imageKit.upload(
-      {
-        file: base64,
-        fileName: 'sample.jpg',
-        tags: ['sample'],
-      },
-      (err, result) => {
-        if (err) return reject(err)
-        if (result?.url) return resolve(result.url)
-        reject(new Error('Upload failed'))
-      }
-    )
+
+  return new Promise((resolve, reject) => {
+    imageKit.upload({
+      file: base64,
+      fileName: `visit_${Date.now()}.jpg`,
+      tags: ['visit']
+    }, (err, result) => {
+      if (err) reject(err)
+      else resolve(result?.url || '')
+    })
   })
 }
+
+// Lifecycle & Watchers
+onMounted(() => {
+  if (route.query?.detail) {
+    showDetail.value = true
+    useNavbar.setHeader('BACK', detailTiket?.value?.customerName ?? '-')
+  }
+})
+
+watch(() => route.query.id, (newId) => {
+  if (route.query.detail && newId) {
+    showDetail.value = true
+    visitNote.value = detailTiket.value?.visitNote || ""
+    useNavbar.setHeader('BACK', detailTiket.value?.customerName || '-')
+  } else {
+    showDetail.value = false
+    useNavbar.setHeader('MAIN')
+    visitNote.value = ""
+  }
+}, { immediate: true })
+
+definePageMeta({
+  title: 'Kunjungan',
+  layout: 'detail'
+})
 </script>
 
-<style>
-.active {
-  border-color: var(--color-primary);
-  border-width: 0 0 0 3px;
-  background-color: var(--color-color-10);
+<style scoped>
+.incoming-page {
+  min-height: 100vh;
+  background: var(--color-gray-50);
+}
+
+.layout-container {
+  display: flex;
+  height: calc(100vh - 80px);
+  overflow: hidden;
+}
+
+/* Master Panel */
+.customer-list-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-right: 1px solid var(--color-gray-100);
+}
+
+@media (min-width: 1024px) {
+  .customer-list-panel {
+    width: 350px;
+    flex-shrink: 0;
+  }
+}
+
+.search-container {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.customer-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+/* Detail Panel */
+.detail-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-gray-50);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1.5rem;
+}
+
+.empty-icon {
+  padding: 2rem;
+  background: white;
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.detail-header {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: white;
+}
+
+.back-button {
+  padding: 0.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background 0.2s;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.detail-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.info-card {
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  border: 1px solid white;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-item.col-span-2 {
+  grid-column: span 2;
+}
+
+.info-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.info-value {
+  font-size: 0.85rem;
+  color: var(--color-gray-800);
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  transition: all 0.2s;
+}
+
+.tab-button.tab-active {
+  background: white;
   color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.action-footer {
+  border-radius: 1.5rem 1.5rem 0 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

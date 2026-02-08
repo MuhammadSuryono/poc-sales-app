@@ -1,58 +1,94 @@
 <template>
-  <div class="flex flex-row gap-2 bg-white border rounded-sm shadow-sm w-full px-3 py-2 items-start hover:bg-gray-100 hover:cursor-pointer">
-    <div class="w-[10%]">
-      <BuildingStorefrontIcon class="h-8 w-8 rounded-full text-gray-500 hover:cursor-pointer" />
+  <div 
+    class="customer-row group"
+    @click="detailTiket(tiketData.customer_no)"
+  >
+    <!-- Left: Store Icon -->
+    <div class="flex-shrink-0">
+      <div class="w-12 h-12 rounded-2xl bg-java-teal/5 flex items-center justify-center group-hover:bg-java-teal group-hover:text-white transition-all duration-300">
+        <BuildingStorefrontIcon class="h-6 w-6 text-java-teal group-hover:text-white transition-colors" />
+      </div>
     </div>
 
-    <div class="flex flex-col gap-0 w-full w-[80%] justify-start">
-      <div class="flex flex-row justify-start gap-4 max-w-[90%] items-center">
-        <span class="text-sm uppercase" @click="detailTiket(tiketData?.customerNo)">{{ tiketData?.customerName }}</span>
-        <span class="py-1 px-3 border rounded-xs text-xs" 
-          :class="{'bg-[#FFFCA1] text-black': tiketData?.visitStatus === 'TODO', 'bg-[#90E0EF]': tiketData?.visitStatus === 'INPROGRESS', 'bg-[#E5F5E0]': tiketData?.visitStatus === 'FINISH'}"
-          >{{ tiketData?.visitStatus }}</span>
+    <!-- Middle: Info -->
+    <div class="flex-1 min-w-0 flex flex-col justify-center">
+      <div class="flex items-center justify-between mb-0.5">
+        <h3 class="text-sm font-bold text-gray-800 truncate uppercase tracking-tight">
+          {{ tiketData.customer_name }}
+        </h3>
+        <!-- <span 
+          class="status-pill"
+          :class="{
+            'pill-todo': tiketData.visitStatus === 'TODO',
+            'pill-inprogress': tiketData.visitStatus === 'INPROGRESS',
+            'pill-finish': tiketData.visitStatus === 'FINISH'
+          }"
+        >
+          {{ tiketData.visitStatus }}
+        </span> -->
       </div>
-      <span class="text-xs text-gray-400">{{ tiketData?.customerNo }}</span>
-      <div class="flex flex-col gap-2 text-xs text-gray-400">
-        <span class="flex items-center gap-1" v-if="tiketData?.visitStatus !== 'TODO'"><ArrowDownCircleIcon class="h-4 w-4 text-green-500" /> {{ tiketData?.visitCheckIn ? useString.setDateTimeFormat(new Date(tiketData?.visitCheckIn)) : '-' }}</span>
-        <span class="flex items-center gap-1" v-if="tiketData?.visitStatus !== 'TODO'"><ArrowUpCircleIcon class="h-4 w-4 text-red-500" /> {{ tiketData?.visitCheckOut ? useString.setDateTimeFormat(new Date(tiketData?.visitCheckOut)) : '-' }}</span>
-        
-        <span class="truncate max-w-[90%]">{{ location.calculateDistance({lat: tiketData?.lat, lng: tiketData?.lng}) }}, {{ tiketData?.alamat }}</span>
+      
+      <div class="flex items-center gap-2 text-[10px] font-bold">
+        <span class="text-gray-400 uppercase leading-none">{{ tiketData.customer_no }}</span>
+        <span class="w-1 h-1 rounded-full bg-gray-200"></span>
+        <span class="text-java-green leading-none">{{ location.calculateDistance({lat: tiketData.lat, lng: tiketData.lng}) }}</span>
       </div>
-      <div class="flex flex-row gap-4 justify-end items-center max-w-[90%] mt-2">
-        <MapIcon class="h-4 w-4 text-gray-400 cursor-pointer hover:text-gray-500" @click="goingToMap(tiketData?.lat, tiketData?.lng)" />
-        <MapPinIcon class="h-4 w-4 text-gray-400 cursor-pointer hover:text-gray-500" @click="goingToMap(tiketData?.lat, tiketData?.lng)"/>
-        <BuildingStorefrontIcon class="h-4 w-4 text-gray-400 cursor-pointer hover:text-gray-500" @click="goingToMap(tiketData?.lat, tiketData?.lng)"/>
-      </div>
+
+      <p class="text-[11px] text-gray-400 line-clamp-1 mt-1 font-medium italic">
+        {{ tiketData.alamat }}
+      </p>
+    </div>
+
+    <!-- Right: Arrow -->
+    <div class="flex-shrink-0 self-center pl-2">
+      <ChevronRightIcon class="h-5 w-5 text-gray-300 group-hover:text-java-teal transition-colors" />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { MapIcon, MapPinIcon, BuildingStorefrontIcon, ArrowUpCircleIcon, ArrowDownCircleIcon } from '@heroicons/vue/24/outline'
+import { 
+  BuildingStorefrontIcon, 
+  ChevronRightIcon
+} from '@heroicons/vue/24/outline'
 import type { Tiket } from '~/types/user'
-const useString = useUseString()
-const { getLocationUrl } = useMaps()
+import type { PropType } from 'vue'
+
 const location = useUserLocation();
 const emit = defineEmits(['detail'])
 
 const props = defineProps({
   tiketData: {
-    type: Object as Tiket,
-    default: () => ({})
+    type: Object as PropType<Tiket>,
+    required: true
   }
 })
-
-const goingToMap = (lat: number, lang: number) => {
-  window.open(getLocationUrl(lat, lang), '_blank')
-}
 
 const detailTiket = (id: string) => {
   emit('detail', id)
 }
-
-
 </script>
 
-<style>
+<style scoped>
+@reference "../../assets/css/main.css";
 
+.customer-row {
+  @apply flex items-stretch gap-4 p-4 bg-white border border-gray-100 rounded-[24px] hover:shadow-lg hover:border-java-teal/20 transition-all duration-300 cursor-pointer;
+}
+
+.status-pill {
+  @apply px-2 py-0.5 rounded-lg text-[8px] font-extrabold uppercase tracking-widest border border-transparent;
+}
+
+.pill-todo {
+  @apply bg-yellow-50 text-yellow-600 border-yellow-100/50;
+}
+
+.pill-inprogress {
+  @apply bg-blue-50 text-blue-600 border-blue-100/50;
+}
+
+.pill-finish {
+  @apply bg-green-50 text-green-600 border-green-100/50;
+}
 </style>
