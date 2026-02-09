@@ -109,6 +109,7 @@ import { useUserStore } from '~/stores/user'
 import type { HistoryTransaction, StatisticStore, Tiket, User } from '~/types/user'
 import VisitInformation from '~/components/page/store/VisitInformation.vue'
 import StoreMenu from '~/components/page/store/StoreMenu.vue'
+import { useLocation } from '~/stores/location'
 
 const useStore = useUserStore()
 const useNotification = useNotificationStore()
@@ -147,8 +148,11 @@ const checkInAction = async () => {
     detailTiket.value.visit_check_in = new Date().toISOString()
     detailTiket.value.visit_status = 'INPROGRESS'
   }
-  
+
   detailTiket.value.last_updated = new Date().toISOString()    
+  if (!userLocation.coords.value) {
+    await userLocation.sendPositionToServer()
+  }
   detailTiket.value.visit_lat = userLocation.coords.value.lat
   detailTiket.value.visit_lng = userLocation.coords.value.lng
   detailTiket.value.visit_address = userLocation.address.value

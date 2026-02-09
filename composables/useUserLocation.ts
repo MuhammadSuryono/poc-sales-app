@@ -97,9 +97,6 @@ export const useUserLocation = () => {
   async function sendPositionToServer() {
     const position = await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 10000,
-      minimumUpdateInterval: 1000,
     })
 
     const current = {
@@ -178,5 +175,6 @@ export const useUserLocation = () => {
     isInsidePolygon,
     startTracking,
     stopTracking,
+    sendPositionToServer,
   }
 }

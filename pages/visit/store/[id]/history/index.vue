@@ -35,18 +35,18 @@
           <div class="flex items-start gap-3">
             <MapPinIcon class="h-5 w-5 text-java-green mt-0.5" />
             <div class="flex flex-col">
-              <span class="text-xs font-bold text-gray-700">{{ historySelected?.visitAddress }}</span>
-              <span class="text-[10px] text-gray-500 uppercase">Jarak: {{ historySelected?.visitDistance ? (historySelected?.visitDistance + 'km') : '-' }}</span>
+              <span class="text-xs font-bold text-gray-700">{{ historySelected?.visit_address }}</span>
+              <span class="text-[10px] text-gray-500 uppercase">Jarak: {{ historySelected?.visit_distance ? (historySelected?.visit_distance + 'km') : '-' }}</span>
             </div>
           </div>
           <div class="flex flex-col gap-2 md:text-right">
             <div class="flex flex-col">
               <span class="text-[10px] text-gray-400 uppercase">Waktu Check-In</span>
-              <span class="text-xs font-bold text-gray-700">{{ historySelected?.visitCheckIn ? useString.setDateTimeFormat(new Date(historySelected?.visitCheckIn)) : '-' }}</span>
+              <span class="text-xs font-bold text-gray-700">{{ historySelected?.visit_check_in ? useString.setDateTimeFormat(new Date(historySelected?.visit_check_in)) : '-' }}</span>
             </div>
             <div class="flex flex-col">
               <span class="text-[10px] text-gray-400 uppercase">Waktu Check-Out</span>
-              <span class="text-xs font-bold text-gray-700">{{ historySelected?.visitCheckOut ? useString.setDateTimeFormat(new Date(historySelected?.visitCheckOut)) : '-' }}</span>
+              <span class="text-xs font-bold text-gray-700">{{ historySelected?.visit_check_out ? useString.setDateTimeFormat(new Date(historySelected?.visit_check_out)) : '-' }}</span>
             </div>
           </div>
         </div>
@@ -54,7 +54,7 @@
         <div class="flex flex-col gap-2">
           <span class="text-sm font-bold text-gray-700">Catatan Aktivitas</span>
           <div class="bg-white border border-gray-100 p-4 rounded-xl text-sm text-gray-600 italic">
-            {{ historySelected?.visitNote || 'Tidak ada catatan' }}
+            {{ historySelected?.visit_note || 'Tidak ada catatan' }}
           </div>
         </div>
 
@@ -62,18 +62,18 @@
           <div class="flex flex-col gap-3">
             <div class="flex items-center justify-between">
               <span class="text-sm font-bold text-gray-700">Foto Produk</span>
-              <span class="text-xs text-gray-400">{{ historySelected?.visitImage?.product?.length ?? 0 }} Foto</span>
+              <span class="text-xs text-gray-400">{{ visitImages?.filter(a => a.category === 'product' || []).length ?? 0 }} Foto</span>  
             </div>
             <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               <div
-                v-for="(im, i) in historySelected?.visitImage?.product"
+                v-for="(im, i) in visitImages?.filter(a => a.category === 'product' || [])"
                 :key="i"
                 class="min-w-[100px] aspect-square"
               >
                 <NuxtImg
                   class="h-full w-full object-cover rounded-xl shadow-sm border border-gray-100"
-                  :src="im"
-                  @click="setPreview(im)"
+                  :src="im.url"
+                  @click="setPreview(im.url)"
                 />
               </div>
             </div>
@@ -82,18 +82,18 @@
           <div class="flex flex-col gap-3">
             <div class="flex items-center justify-between">
               <span class="text-sm font-bold text-gray-700">Foto Lokasi</span>
-              <span class="text-xs text-gray-400">{{ historySelected?.visit_image?.location?.length ?? 0 }} Foto</span>
+              <span class="text-xs text-gray-400">{{ visitImages.filter(a => a.category === 'location' || []).length ?? 0 }} Foto</span>
             </div>
             <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               <div
-                v-for="(im, i) in historySelected?.visitImage?.location"
+                v-for="(im, i) in visitImages.filter(a => a.category === 'location' || [])"
                 :key="i"
                 class="min-w-[100px] aspect-square"
               >
                 <NuxtImg
                   class="h-full w-full object-cover rounded-xl shadow-sm border border-gray-100"
-                  :src="im"
-                  @click="setPreview(im)"
+                  :src="im.url"
+                  @click="setPreview(im.url)"
                 />
               </div>
             </div>
@@ -132,7 +132,7 @@
 
 <script lang="ts" setup>
 import { useUserStore } from '~/stores/user'
-import type { VisitHistory } from '~/types/user'
+import { type VisitImage, type VisitHistory } from '~/types/user'
 import { MapPinIcon, ArchiveBoxXMarkIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
@@ -141,13 +141,18 @@ const customerId = route?.params?.id as string
 const useStore = useUserStore()
 const showModalHistory = ref<boolean>(false);
 const historySelected = ref<VisitHistory>({} as VisitHistory)
+const visitImages = ref<VisitImage[]>([])
 const preview = ref<boolean>(false)
 const previewSrc = ref<string>("")
 const historyVisit = computed(() => useStore.visitHistory || [])
+const visitImageLocation = computed(() => visitImages?.value?.filter(a => a.category === 'location' || []))
+const visitImageProduct = computed(() => visitImages?.value?.filter(a => a.category === 'product' || []))
 
-const setVisitHistorySelected = (visit: VisitHistory) => {
+const setVisitHistorySelected = async (visit: VisitHistory) => {
+  visitImages.value = []
   showModalHistory.value = true
   historySelected.value = visit
+  visitImages.value = await useStore.fetchVisitImage(historySelected.value.visit_id) || []
 }
 const setPreview = (src: string) => {
   preview.value = true

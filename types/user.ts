@@ -71,6 +71,7 @@ export interface UserActivity {
 
 export interface VisitHistory extends Tiket {
   user_visit_name: string,
+  visit_id: string
   // userVisitEmail: string
 }
 

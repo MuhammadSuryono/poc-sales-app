@@ -145,6 +145,7 @@ export const useUserStore = defineStore('userStore', () => {
     const visitHistoryItem: VisitHistory = {
       ...tiket,
       user_visit_name: user.value?.name ?? '',
+      visit_id: tiket.id
       // userVisitEmail: user.value?.email ?? ''
     }
     await $supabase

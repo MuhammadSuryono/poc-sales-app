@@ -42,7 +42,7 @@
           uppercase tracking-[0.2em] border transition-all active:scale-[0.98]"
           :class="(!insideRadius || totalCart > 0) ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-red-50 text-red-600 border-red-200 shadow-xl shadow-red-500/10'"
         >
-          <span>Selesai</span>
+          <span>CHECK OUT</span>
           <CheckIcon class="w-6 h-6" />
         </button>
         
@@ -57,12 +57,12 @@
         </button>
       </div>
       
-      <div v-if="itemTiket?.visit_status === 'FINISH'" class="flex items-center gap-4 py-5 justify-center bg-gray-50/50 rounded-2xl border border-gray-100">
+      <!-- <div v-if="itemTiket?.visit_status === 'FINISH'" class="flex items-center gap-4 py-5 justify-center bg-gray-50/50 rounded-2xl border border-gray-100">
         <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md">
           <CheckIcon class="w-6 h-6 text-java-green" />
         </div>
         <span class="text-xs font-black text-java-teal uppercase tracking-[0.2em]">Aktivitas Selesai</span>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
