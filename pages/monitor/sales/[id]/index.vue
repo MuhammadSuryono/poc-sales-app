@@ -404,6 +404,7 @@ const shownActivities = computed(() => monitoringStore.userActivities || [])
 const mapRef = ref<L.Map | null>(null)
 const markerLayer = ref<L.LayerGroup | null>(null)
 const routeLine = ref<L.Polyline | null>(null)
+const routeFeatureGroup = ref<L.FeatureGroup | null>(null)
 const showModalReimbursements = ref<boolean>(false)
 const showModalVisit = ref<boolean>(false)
 const showModalActivityReimbursement = ref<boolean>(false)
@@ -500,22 +501,61 @@ onMounted(async () => {
   }).addTo(mapRef.value)
   markerLayer.value = L.layerGroup().addTo(mapRef.value)
 
+  const createNumberedIcon = (n: number, idx: number, total: number) => {
+    const isStart = idx === 0
+    const isEnd = idx === total - 1
+    const color = isStart ? '#16a34a' : isEnd ? '#ef4444' : '#0ea5a6'
+    const color2 = isStart ? '#22c55e' : isEnd ? '#f87171' : '#2dd4bf'
+    const border = isStart ? '#15803d' : isEnd ? '#b91c1c' : '#0f766e'
+    const html = `
+      <div style="width:36px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;">
+        <div style="width:36px;height:36px;border-radius:50%;
+          background: radial-gradient(120% 120% at 30% 30%, ${color2} 0%, ${color} 70%);
+          color:#fff;border:2px solid ${border};
+          display:flex;align-items:center;justify-content:center;
+          font-size:13px;font-weight:800;letter-spacing:0.02em;
+          box-shadow:0 6px 14px rgba(0,0,0,0.25);">${n}</div>
+        <div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;
+          border-top:12px solid ${color};filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"></div>
+      </div>
+    `
+    return L.divIcon({
+      html,
+      className: 'numbered-marker',
+      iconSize: [36, 48],
+      iconAnchor: [18, 48],
+      popupAnchor: [0, -40]
+    })
+  }
+
   const updateMap = () => {
     const m = mapRef.value
     if (!m || !markerLayer.value) return
     markerLayer.value.clearLayers()
     points.value.forEach((p, idx) => {
-      const mk = L.marker(p)
+      const mk = L.marker(p, { icon: createNumberedIcon(idx + 1, idx, points.value.length) })
       mk.addTo(markerLayer.value as L.LayerGroup)
       mk.bindPopup(`<div class="text-sm text-gray-600"><strong>${workingEntries.value[idx].locationName}</strong><br>${workingEntries.value[idx].timestamp}</div>`)
     })
-    if (routeLine.value) {
-      routeLine.value.remove()
-      routeLine.value = null
+    if (routeFeatureGroup.value) {
+      routeFeatureGroup.value.remove()
+      routeFeatureGroup.value = null
     }
     if (points.value.length >= 2) {
-      routeLine.value = L.polyline(points.value, { color: '#0f766e', weight: 4 }).addTo(m)
-      m.fitBounds(routeLine.value.getBounds(), { padding: [30, 30] })
+      routeFeatureGroup.value = L.featureGroup().addTo(m)
+      for (let i = 0; i < points.value.length - 1; i++) {
+        const seg = L.polyline([points.value[i], points.value[i + 1]], {
+          color: i === 0 ? '#16a34a' : (i === points.value.length - 2 ? '#ef4444' : '#0ea5a6'),
+          weight: 5,
+          opacity: 0.85,
+          dashArray: '8 10',
+          lineCap: 'round',
+          lineJoin: 'round',
+          className: 'route-path'
+        })
+        seg.addTo(routeFeatureGroup.value)
+      }
+      m.fitBounds(routeFeatureGroup.value.getBounds(), { padding: [30, 30] })
     } else if (points.value.length === 1) {
       m.setView(points.value[0], m.getZoom())
     }
@@ -544,4 +584,9 @@ const openReimbursementModal = async () => {
 </script>
 
 <style scoped>
+.numbered-marker { }
+
+:deep(.route-path) {
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+}
 </style>
